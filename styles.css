@@ -176,6 +176,47 @@ main {
   }
 }
 
+@media (max-width: 640px) {
+  .hero {
+    width: calc(100% - 24px);
+    padding: 56px 0 40px;
+  }
+
+  .hero-text {
+    gap: 8px;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    line-height: 1.25;
+  }
+
+  .authors-line {
+    font-size: 0.9rem;
+  }
+
+  .affiliations {
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+
+  .cta-group {
+    gap: 8px;
+  }
+
+  .resource-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+
+  .resource-btn .btn-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
 .hero-figure figcaption {
   margin-top: 10px;
   font-size: 0.85rem;
