@@ -1,346 +1,355 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-    <title>SpatialTree – Branching Out Spatial Intelligence in MLLMs</title>
-    <meta
-      name="description"
-      content="SpatialTree introduces a capability-centric taxonomy, benchmark, and data engine that map out spatial intelligence for multimodal large language models."
-    />
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossorigin
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="styles.css"
-    />
-  </head>
-  <body>
-    <header class="site-header">
-      <div class="logo">SpatialTree</div>
-      <nav>
-        <a href="#overview">Overview</a>
-        <a href="#pillars">Highlights</a>
-        <a href="#tree">Capability Tree</a>
-        <a href="#engine">SpatialEngine</a>
-        <a href="#benchmark">SpatialTree-Bench</a>
-        <a href="#authors">Authors</a>
-        <a href="#resources">Resources</a>
-      </nav>
-    </header>
 
-    <section class="hero">
-      <div class="hero-grid">
-        <div class="hero-text">
-          <p class="eyebrow">Capability taxonomy · data engine · benchmark</p>
-          <h1>SpatialTree: How Spatial Abilities Branch Out in MLLMs</h1>
-          <p class="authors-line">
-            Yuxi Xiao<sup>▲,★,*</sup>, Longfei Li<sup>♦,★,*</sup>, Shen Yan<sup>★</sup>, Xinhang Liu<sup>★</sup>, Sida Peng<sup>▲</sup>, Yunchao Wei<sup>♦</sup>,
-            Xiaowei Zhou<sup>▲</sup>, Bingyi Kang<sup>★,†</sup>
-          </p>
-          <p class="affiliations">
-            <span>▲Zhejiang University</span> · <span>★ByteDance Seed</span> · <span>♦Beijing Jiaotong University</span>
-          </p>
-          <p class="affiliations">
-            <span>*Equal Contribution</span> · <span>†Project Lead</span> <a href="mailto:bingyikang@bytedance.com" class="contact-email">bingyikang@bytedance.com</a>
-          </p>
-          <div class="cta-group">
-            <a class="resource-btn" href="assets/SpatialTree_ICLR2026.pdf" target="_blank" rel="noopener">
-              <span class="btn-icon">📄</span>
-              <span>PDF</span>
-            </a>
-            <a class="resource-btn" href="https://arxiv.org/abs/2412.14171" target="_blank" rel="noopener">
-              <span class="btn-icon">
-                <i class="ai ai-arxiv"></i>
-              </span>
-              <span>arXiv</span>
-            </a>
-            <a class="resource-btn" href="https://github.com/your-repo/spatialtree" target="_blank" rel="noopener">
-              <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-              <span>Code</span>
-            </a>
-            <a class="resource-btn" href="#benchmark">
-              <span class="btn-icon">🏆</span>
-              <span>Leaderboard</span>
-            </a>
-          </div>
-        </div>
-        <figure class="hero-figure figure-frame">
-          <video
-            src="assets/figures/capability-tree.mp4"
-            autoplay
-            muted
-            loop
-            playsinline
-            poster="assets/figures/capability-tree.png"
-            aria-label="SpatialTree capability hierarchy visualization"
-          ></video>
-          <figcaption>SpatialTree organizes spatial abilities into L1–L4, linking perception to agentic competence.</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <main>
-      <section id="overview" class="section">
-        <h2>Overview</h2>
-        <p>
-          SpatialTree is a capability-centric roadmap for spatial intelligence in MLLMs. We decompose spatial reasoning into four dependent layers, build a data
-          engine (SpatialEngine + SpatialPlus) that aligns annotations with the tree, and release SpatialTree-Bench to measure how perception atoms support
-          higher-level reasoning and action.
-        </p>
-        <ul class="key-points">
-          <li>27 atomic abilities arranged into L1–L4 with weights grounded in cognitive theory + empirical correlations.</li>
-          <li>12 perception pipelines rolled into 24 workflows that populate SpatialTree leaves with consistent metrics.</li>
-          <li>Benchmarking of 16 frontier MLLMs shows reasoning variants dominate L3 but remain bottlenecked on L4 execution.</li>
-          <li>Atomic prompting (size, depth, correspondence cues) delivers up to +22% navigation gains without retraining.</li>
-        </ul>
-      </section>
-
-      <section id="pillars" class="section pillars">
-        <h2>Highlights</h2>
-        <div class="pillars-grid">
-          <article class="pillar-card">
-            <div class="figure-frame">
-              <video
-                src="assets/figures/capability-tree.mp4"
-                autoplay
-                muted
-                loop
-                playsinline
-                poster="assets/figures/capability-tree.png"
-                aria-label="SpatialTree capability hierarchy visualization"
-              ></video>
+<body>
+  <div class="scale-wrapper">
+    <div class="fixed-canvas">
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+          />
+          <title>SpatialTree – Branching Out Spatial Intelligence in MLLMs</title>
+          <meta
+            name="description"
+            content="SpatialTree introduces a capability-centric taxonomy, benchmark, and data engine that map out spatial intelligence for multimodal large language models."
+          />
+          <link
+            rel="preconnect"
+            href="https://fonts.googleapis.com"
+          />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossorigin
+          />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap"
+            rel="stylesheet"
+          />
+          <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css"
+          />
+          <link
+            rel="stylesheet"
+            href="styles.css"
+          />
+        </head>
+        <body>
+          <header class="site-header">
+            <div class="logo">SpatialTree</div>
+            <nav>
+              <a href="#overview">Overview</a>
+              <a href="#pillars">Highlights</a>
+              <a href="#tree">Capability Tree</a>
+              <a href="#engine">SpatialEngine</a>
+              <a href="#benchmark">SpatialTree-Bench</a>
+              <a href="#authors">Authors</a>
+              <a href="#resources">Resources</a>
+            </nav>
+          </header>
+      
+          <section class="hero">
+            <div class="hero-grid">
+              <div class="hero-text">
+                <p class="eyebrow">Capability taxonomy · data engine · benchmark</p>
+                <h1>SpatialTree: How Spatial Abilities Branch Out in MLLMs</h1>
+                <p class="authors-line">
+                  Yuxi Xiao<sup>▲,★,*</sup>, Longfei Li<sup>♦,★,*</sup>, Shen Yan<sup>★</sup>, Xinhang Liu<sup>★</sup>, Sida Peng<sup>▲</sup>, Yunchao Wei<sup>♦</sup>,
+                  Xiaowei Zhou<sup>▲</sup>, Bingyi Kang<sup>★,†</sup>
+                </p>
+                <p class="affiliations">
+                  <span>▲Zhejiang University</span> · <span>★ByteDance Seed</span> · <span>♦Beijing Jiaotong University</span>
+                </p>
+                <p class="affiliations">
+                  <span>*Equal Contribution</span> · <span>†Project Lead</span> <a href="mailto:bingyikang@bytedance.com" class="contact-email">bingyikang@bytedance.com</a>
+                </p>
+                <div class="cta-group">
+                  <a class="resource-btn" href="assets/SpatialTree_ICLR2026.pdf" target="_blank" rel="noopener">
+                    <span class="btn-icon">📄</span>
+                    <span>PDF</span>
+                  </a>
+                  <a class="resource-btn" href="https://arxiv.org/abs/2412.14171" target="_blank" rel="noopener">
+                    <span class="btn-icon">
+                      <i class="ai ai-arxiv"></i>
+                    </span>
+                    <span>arXiv</span>
+                  </a>
+                  <a class="resource-btn" href="https://github.com/your-repo/spatialtree" target="_blank" rel="noopener">
+                    <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span>Code</span>
+                  </a>
+                  <a class="resource-btn" href="#benchmark">
+                    <span class="btn-icon">🏆</span>
+                    <span>Leaderboard</span>
+                  </a>
+                </div>
+              </div>
+              <figure class="hero-figure figure-frame">
+                <video
+                  src="assets/figures/capability-tree.mp4"
+                  autoplay
+                  muted
+                  loop
+                  playsinline
+                  poster="assets/figures/capability-tree.png"
+                  aria-label="SpatialTree capability hierarchy visualization"
+                ></video>
+                <figcaption>SpatialTree organizes spatial abilities into L1–L4, linking perception to agentic competence.</figcaption>
+              </figure>
             </div>
-            <h3>Capability Tree</h3>
-            <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p>
-            <ul class="pillar-list">
-              <li>L1–L4 with 27 atomic abilities.</li>
-              <li>Weights guided by cognitive theory + correlations.</li>
-              <li>Used for diagnostics and curriculum design.</li>
-            </ul>
-          </article>
-          <article class="pillar-card">
-            <div class="figure-frame">
-              <img src="assets/figures/spatial-engine.png" alt="SpatialEngine pipeline diagram" />
-            </div>
-            <h3>SpatialEngine</h3>
-            <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
-            <ul class="pillar-list">
-              <li>12 perception pipelines → 24 workflows.</li>
-              <li>Orientation, geometry, memory, action traces.</li>
-              <li>Feeds benchmark + future training recipes.</li>
-            </ul>
-          </article>
-          <article class="pillar-card">
-            <div class="figure-frame">
-              <img src="assets/figures/spatialtree-bench.png" alt="SpatialTree-Bench correlation heatmap" />
-            </div>
-            <h3>SpatialTree-Bench</h3>
-            <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
-            <ul class="pillar-list">
-              <li>Closed/open + reasoning/non reasoning models.</li>
-              <li>Classification, metric error, action success.</li>
-              <li>Atomic prompting yields +5–22% navigation gains.</li>
-            </ul>
-          </article>
-        </div>
-      </section>
+          </section>
+      
+          <main>
+            <section id="overview" class="section">
+              <h2>Overview</h2>
+              <p>
+                SpatialTree is a capability-centric roadmap for spatial intelligence in MLLMs. We decompose spatial reasoning into four dependent layers, build a data
+                engine (SpatialEngine + SpatialPlus) that aligns annotations with the tree, and release SpatialTree-Bench to measure how perception atoms support
+                higher-level reasoning and action.
+              </p>
+              <ul class="key-points">
+                <li>27 atomic abilities arranged into L1–L4 with weights grounded in cognitive theory + empirical correlations.</li>
+                <li>12 perception pipelines rolled into 24 workflows that populate SpatialTree leaves with consistent metrics.</li>
+                <li>Benchmarking of 16 frontier MLLMs shows reasoning variants dominate L3 but remain bottlenecked on L4 execution.</li>
+                <li>Atomic prompting (size, depth, correspondence cues) delivers up to +22% navigation gains without retraining.</li>
+              </ul>
+            </section>
+      
+            <section id="pillars" class="section pillars">
+              <h2>Highlights</h2>
+              <div class="pillars-grid">
+                <article class="pillar-card">
+                  <div class="figure-frame">
+                    <video
+                      src="assets/figures/capability-tree.mp4"
+                      autoplay
+                      muted
+                      loop
+                      playsinline
+                      poster="assets/figures/capability-tree.png"
+                      aria-label="SpatialTree capability hierarchy visualization"
+                    ></video>
+                  </div>
+                  <h3>Capability Tree</h3>
+                  <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p>
+                  <ul class="pillar-list">
+                    <li>L1–L4 with 27 atomic abilities.</li>
+                    <li>Weights guided by cognitive theory + correlations.</li>
+                    <li>Used for diagnostics and curriculum design.</li>
+                  </ul>
+                </article>
+                <article class="pillar-card">
+                  <div class="figure-frame">
+                    <img src="assets/figures/spatial-engine.png" alt="SpatialEngine pipeline diagram" />
+                  </div>
+                  <h3>SpatialEngine</h3>
+                  <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
+                  <ul class="pillar-list">
+                    <li>12 perception pipelines → 24 workflows.</li>
+                    <li>Orientation, geometry, memory, action traces.</li>
+                    <li>Feeds benchmark + future training recipes.</li>
+                  </ul>
+                </article>
+                <article class="pillar-card">
+                  <div class="figure-frame">
+                    <img src="assets/figures/spatialtree-bench.png" alt="SpatialTree-Bench correlation heatmap" />
+                  </div>
+                  <h3>SpatialTree-Bench</h3>
+                  <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
+                  <ul class="pillar-list">
+                    <li>Closed/open + reasoning/non reasoning models.</li>
+                    <li>Classification, metric error, action success.</li>
+                    <li>Atomic prompting yields +5–22% navigation gains.</li>
+                  </ul>
+                </article>
+              </div>
+            </section>
+      
+            <section id="tree" class="section taxonomy">
+              <h2>Capability Tree</h2>
+              <p>The SpatialTree taxonomy decomposes spatial intelligence into layered abilities so that perception atoms scaffold reasoning and agency.</p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Layer</th>
+                    <th>Focus</th>
+                    <th>Representative abilities</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>L4 · Agentic competence</td>
+                    <td>Goal-conditioned behaviors</td>
+                    <td>Navigation, manipulation primitives, spatial action mapping</td>
+                  </tr>
+                  <tr>
+                    <td>L3 · Mental simulation</td>
+                    <td>Internal rollouts &amp; planning</td>
+                    <td>Causal reasoning, sequential planning, affordance forecasting</td>
+                  </tr>
+                  <tr>
+                    <td>L2 · Mental mapping</td>
+                    <td>Memory + multi-view grounding</td>
+                    <td>Correspondence, perspective alignment, memory retrieval</td>
+                  </tr>
+                  <tr>
+                    <td>L1 · Perception atoms</td>
+                    <td>Metric &amp; relational sensing</td>
+                    <td>Orientation, size/depth/distance, motion and 3D grounding</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+      
+            <section id="interactive-tree" class="section interactive-tree">
+              <h2>Explore the Layers</h2>
+              <p>Click a layer to see its focus, representative abilities, and example tasks/datasets drawn from the paper.</p>
+              <div class="interactive-layout">
+                <div class="node-list">
+                  <button class="node-btn active" data-node="L4">L4 · Agentic Competence</button>
+                  <button class="node-btn" data-node="L3">L3 · Mental Simulation</button>
+                  <button class="node-btn" data-node="L2">L2 · Mental Mapping</button>
+                  <button class="node-btn" data-node="L1">L1 · Perception Atoms</button>
+                </div>
+                <div class="node-detail">
+                  <h3 id="node-title">L4 · Agentic Competence</h3>
+                  <p id="node-description">
+                    Converts perception + memory into executable behaviors through the Spatial Action Mapping, covering goal execution, open-world exploration, and manipulation.
+                  </p>
+                  <ul id="node-examples">
+                    <li>Tasks: navigation with 6-DoF camera control, gripper primitives.</li>
+                    <li>Datasets: SpatialPlus agentic traces, EmbodiedBench, SITEs.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+      
+            <section id="engine" class="section">
+              <h2>SpatialEngine &amp; SpatialPlus</h2>
+              <p>SpatialEngine operationalizes the tree by generating annotations and action traces aligned with each capability layer.</p>
+              <div class="two-column">
+                <div>
+                  <h3>SpatialEngine</h3>
+                  <ul>
+                    <li>Models: depth, orientation, correspondence, localization, captioning.</li>
+                    <li>12 pipelines for reconstruction, pose alignment, tracking, affordance cues, video QA.</li>
+                    <li>24 workflows mapped to SpatialTree leaves with consistent scoring.</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3>SpatialPlus</h3>
+                  <ul>
+                    <li>Orientation &amp; geometry with synthetic control.</li>
+                    <li>Memory retrieval and relational QA with richer prompts.</li>
+                    <li>Agentic navigation/manipulation logs aligned to the action vocabulary.</li>
+                    <li>Sources include VSI-Bench, MMSI-Bench, LLaVA-3D, SpatialEval, SITE, Omnispatial, SpatialViz, MindCube, EmbodiedBench, Multi-SPA, 3DSR-Bench.</li>
+                  </ul>
+                </div>
+              </div>
+            </section>
+      
+            <section id="benchmark" class="section benchmark">
+              <h2>SpatialTree-Bench</h2>
+              <p>
+                SpatialTree-Bench measures 16 closed/open MLLMs across L1–L4 with balanced weighting, revealing orthogonal perception atoms and tightly coupled higher
+                layers.
+              </p>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Model</th>
+                    <th>Avg.</th>
+                    <th>Geometry</th>
+                    <th>Relational</th>
+                    <th>Memory</th>
+                    <th>Goal Exec.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Gemini 2.5 Pro</td>
+                    <td>53.9</td>
+                    <td>53.9</td>
+                    <td>64.6</td>
+                    <td>60.7</td>
+                    <td>24.9</td>
+                  </tr>
+                  <tr>
+                    <td>Gemini 2.5 Flash</td>
+                    <td>47.8</td>
+                    <td>42.9</td>
+                    <td>62.8</td>
+                    <td>60.5</td>
+                    <td>22.7</td>
+                  </tr>
+                  <tr>
+                    <td>GPT-5</td>
+                    <td>46.7</td>
+                    <td>44.5</td>
+                    <td>58.4</td>
+                    <td>55.3</td>
+                    <td>23.6</td>
+                  </tr>
+                  <tr>
+                    <td>Best Open (Qwen 2.5VL-72B)</td>
+                    <td>41.3</td>
+                    <td>38.5</td>
+                    <td>59.3</td>
+                    <td>36.4</td>
+                    <td>23.8</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="notes">
+                <p>Hierarchy insight: L1 abilities are largely orthogonal, while L3 and L4 scores are strongly correlated.</p>
+                <p>Atomic prompting: Correspondence (+12.1%), depth (+22.1%), and size (+5.1%) cues improve navigation without retraining.</p>
+              </div>
+            </section>
+      
+            <section id="authors" class="section authors">
+              <h2>Authors</h2>
+              <p>
+                Yuxi Xiao<sup>1,3*</sup>, Longfei Li<sup>2,3*</sup>, Shen Yan<sup>3</sup>, Xinhang Liu<sup>3</sup>, Sida Peng<sup>1</sup>, Yunchao Wei<sup>2</sup>,
+                Xiaowei Zhou<sup>1</sup>, Bingyi Kang<sup>3†</sup>
+              </p>
+              <p>1 Zhejiang University · 2 Beijing Jiaotong University · 3 ByteDance Seed</p>
+              <p class="note">* Equal contribution · † Corresponding author</p>
+            </section>
+      
+            <section id="resources" class="section resources">
+              <h2>Resources</h2>
+              <div class="resource-grid">
+                <a class="resource-card" href="assets/SpatialTree_ICLR2026.pdf" target="_blank" rel="noopener">
+                  <h3>Paper PDF</h3>
+                  <p>Full submission with appendix.</p>
+                </a>
+                <a class="resource-card" href="paper/paper.tex" target="_blank" rel="noopener">
+                  <h3>LaTeX Source</h3>
+                  <p>bytedance_seed.cls + structured sections.</p>
+                </a>
+                <article class="resource-card">
+                  <h3>BibTeX</h3>
+                  <p class="bibtex-entry">@misc{spatialtree2025, title={SpatialTree: Branching Out Spatial Intelligence in MLLMs}, year={2025}, note={Project page: spatree.github.io}}</p>
+                </article>
+              </div>
+            </section>
+          </main>
+      
+          <footer class="footer">
+            <p>© 2025 SpatialTree Authors · CC BY 4.0 preprint</p>
+            <p>Last updated: Oct 2025</p>
+          </footer>
+      
+          <script src="script.js"></script>
+        </body>
+      </html>      
+    </div>
+  </div>
+</body>
 
-      <section id="tree" class="section taxonomy">
-        <h2>Capability Tree</h2>
-        <p>The SpatialTree taxonomy decomposes spatial intelligence into layered abilities so that perception atoms scaffold reasoning and agency.</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Layer</th>
-              <th>Focus</th>
-              <th>Representative abilities</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>L4 · Agentic competence</td>
-              <td>Goal-conditioned behaviors</td>
-              <td>Navigation, manipulation primitives, spatial action mapping</td>
-            </tr>
-            <tr>
-              <td>L3 · Mental simulation</td>
-              <td>Internal rollouts &amp; planning</td>
-              <td>Causal reasoning, sequential planning, affordance forecasting</td>
-            </tr>
-            <tr>
-              <td>L2 · Mental mapping</td>
-              <td>Memory + multi-view grounding</td>
-              <td>Correspondence, perspective alignment, memory retrieval</td>
-            </tr>
-            <tr>
-              <td>L1 · Perception atoms</td>
-              <td>Metric &amp; relational sensing</td>
-              <td>Orientation, size/depth/distance, motion and 3D grounding</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
 
-      <section id="interactive-tree" class="section interactive-tree">
-        <h2>Explore the Layers</h2>
-        <p>Click a layer to see its focus, representative abilities, and example tasks/datasets drawn from the paper.</p>
-        <div class="interactive-layout">
-          <div class="node-list">
-            <button class="node-btn active" data-node="L4">L4 · Agentic Competence</button>
-            <button class="node-btn" data-node="L3">L3 · Mental Simulation</button>
-            <button class="node-btn" data-node="L2">L2 · Mental Mapping</button>
-            <button class="node-btn" data-node="L1">L1 · Perception Atoms</button>
-          </div>
-          <div class="node-detail">
-            <h3 id="node-title">L4 · Agentic Competence</h3>
-            <p id="node-description">
-              Converts perception + memory into executable behaviors through the Spatial Action Mapping, covering goal execution, open-world exploration, and manipulation.
-            </p>
-            <ul id="node-examples">
-              <li>Tasks: navigation with 6-DoF camera control, gripper primitives.</li>
-              <li>Datasets: SpatialPlus agentic traces, EmbodiedBench, SITEs.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section id="engine" class="section">
-        <h2>SpatialEngine &amp; SpatialPlus</h2>
-        <p>SpatialEngine operationalizes the tree by generating annotations and action traces aligned with each capability layer.</p>
-        <div class="two-column">
-          <div>
-            <h3>SpatialEngine</h3>
-            <ul>
-              <li>Models: depth, orientation, correspondence, localization, captioning.</li>
-              <li>12 pipelines for reconstruction, pose alignment, tracking, affordance cues, video QA.</li>
-              <li>24 workflows mapped to SpatialTree leaves with consistent scoring.</li>
-            </ul>
-          </div>
-          <div>
-            <h3>SpatialPlus</h3>
-            <ul>
-              <li>Orientation &amp; geometry with synthetic control.</li>
-              <li>Memory retrieval and relational QA with richer prompts.</li>
-              <li>Agentic navigation/manipulation logs aligned to the action vocabulary.</li>
-              <li>Sources include VSI-Bench, MMSI-Bench, LLaVA-3D, SpatialEval, SITE, Omnispatial, SpatialViz, MindCube, EmbodiedBench, Multi-SPA, 3DSR-Bench.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      <section id="benchmark" class="section benchmark">
-        <h2>SpatialTree-Bench</h2>
-        <p>
-          SpatialTree-Bench measures 16 closed/open MLLMs across L1–L4 with balanced weighting, revealing orthogonal perception atoms and tightly coupled higher
-          layers.
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Avg.</th>
-              <th>Geometry</th>
-              <th>Relational</th>
-              <th>Memory</th>
-              <th>Goal Exec.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Gemini 2.5 Pro</td>
-              <td>53.9</td>
-              <td>53.9</td>
-              <td>64.6</td>
-              <td>60.7</td>
-              <td>24.9</td>
-            </tr>
-            <tr>
-              <td>Gemini 2.5 Flash</td>
-              <td>47.8</td>
-              <td>42.9</td>
-              <td>62.8</td>
-              <td>60.5</td>
-              <td>22.7</td>
-            </tr>
-            <tr>
-              <td>GPT-5</td>
-              <td>46.7</td>
-              <td>44.5</td>
-              <td>58.4</td>
-              <td>55.3</td>
-              <td>23.6</td>
-            </tr>
-            <tr>
-              <td>Best Open (Qwen 2.5VL-72B)</td>
-              <td>41.3</td>
-              <td>38.5</td>
-              <td>59.3</td>
-              <td>36.4</td>
-              <td>23.8</td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="notes">
-          <p>Hierarchy insight: L1 abilities are largely orthogonal, while L3 and L4 scores are strongly correlated.</p>
-          <p>Atomic prompting: Correspondence (+12.1%), depth (+22.1%), and size (+5.1%) cues improve navigation without retraining.</p>
-        </div>
-      </section>
-
-      <section id="authors" class="section authors">
-        <h2>Authors</h2>
-        <p>
-          Yuxi Xiao<sup>1,3*</sup>, Longfei Li<sup>2,3*</sup>, Shen Yan<sup>3</sup>, Xinhang Liu<sup>3</sup>, Sida Peng<sup>1</sup>, Yunchao Wei<sup>2</sup>,
-          Xiaowei Zhou<sup>1</sup>, Bingyi Kang<sup>3†</sup>
-        </p>
-        <p>1 Zhejiang University · 2 Beijing Jiaotong University · 3 ByteDance Seed</p>
-        <p class="note">* Equal contribution · † Corresponding author</p>
-      </section>
-
-      <section id="resources" class="section resources">
-        <h2>Resources</h2>
-        <div class="resource-grid">
-          <a class="resource-card" href="assets/SpatialTree_ICLR2026.pdf" target="_blank" rel="noopener">
-            <h3>Paper PDF</h3>
-            <p>Full submission with appendix.</p>
-          </a>
-          <a class="resource-card" href="paper/paper.tex" target="_blank" rel="noopener">
-            <h3>LaTeX Source</h3>
-            <p>bytedance_seed.cls + structured sections.</p>
-          </a>
-          <article class="resource-card">
-            <h3>BibTeX</h3>
-            <p class="bibtex-entry">@misc{spatialtree2025, title={SpatialTree: Branching Out Spatial Intelligence in MLLMs}, year={2025}, note={Project page: spatree.github.io}}</p>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <p>© 2025 SpatialTree Authors · CC BY 4.0 preprint</p>
-      <p>Last updated: Oct 2025</p>
-    </footer>
-
-    <script src="script.js"></script>
-  </body>
-</html>
