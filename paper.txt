@@ -1,0 +1,2192 @@
+000
+001
+002
+003
+004
+005
+006
+007
+008
+009
+010
+011
+012
+013
+014
+015
+016
+017
+018
+019
+020
+021
+022
+023
+024
+025
+026
+027
+028
+029
+030
+031
+032
+033
+034
+035
+036
+037
+038
+039
+040
+041
+042
+043
+044
+045
+046
+047
+048
+049
+050
+051
+052
+053Under review as a conference paper at ICLR 2026
+SpatialTree: Branching Out Spatial Intelligence in
+MLLMs via a Capability Tree
+Anonymous authors
+Paper under double-blind review
+Abstract
+SpatialIntelligence(SI)israpidlybecomingacornerstonecapabilityforMLLMs,
+enabling them to seamlessly perceive, reason about, and interact with complex
+3D environments — a critical step towards truly embodied AI systems. However,
+previous works typically focus on a few specific 3D tasks, offering only a frag-
+mented view of MLLMs’ spatial abilities. Inspired by cognitive science studys,
+weproposeSpatialTree,ahierarchicaltaxonomythatorganizesSIintoacapability
+tree—from low level perception (L1), mental mapping (L2), mental simulation
+(L3), to high level agentic competence (L4). Building on this taxonomy, we in-
+troducethefirstcapability-centricbenchmarkthatthoroughlyevaluatesthespatial
+abilitiesofMLLMs. Moreover,extensiveexperimentsareconductedtoinvestigate
+the compositional nature of spatial abilities, examining the dependencies among
+theabilitiesandidentifyingtheatomicabilitiesthatexertthegreatestinfluenceon
+others. Furthermore, we introduce SpatialEngine, an extensible framework that
+integrates3DvisionperceptionmodelswithMLLMsintoaprogressiveannotator,
+enabling comprehensive data annotation across the entire tree.
+Mental MappingMental SimulationAgentic Competence
+Memory
+Memory Retrieval
+Cognitive Map
+Open-world Exploration
+Self-Goaling
+Knowledge Acquisition
+Goal-Driven Execution
+Navigation
+Manipulation 
+SequentialPlanning
+Route
+Operation
+Causal Reasoning
+GeometryPuzzlesDynamicsRelation
+Perception
+Orientation
+Gravity
+Object
+Motion
+Egocentric
+Allocentric
+Relation
+Correspondence
+RelativeDirection
+Localization
+3D Detection3DGrounding
+Geometry
+SizeShapeDistance
+Affordance
+Motion
+PerspectiveTaking
+Spatial CaptionRelation
+Understanding
+Figure 1:SpatialTree.Inspired by cognitive science, our proposed SpatialTree organizes spatial
+intelligence into a four-layer hierarchy (L1-L4). Rooted in foundational multi-modal capabilities
+(L0), the tree progressively branches from Basic perception (L1) to agentic competence (L4).
+1
+
+054
+055
+056
+057
+058
+059
+060
+061
+062
+063
+064
+065
+066
+067
+068
+069
+070
+071
+072
+073
+074
+075
+076
+077
+078
+079
+080
+081
+082
+083
+084
+085
+086
+087
+088
+089
+090
+091
+092
+093
+094
+095
+096
+097
+098
+099
+100
+101
+102
+103
+104
+105
+106
+107Under review as a conference paper at ICLR 2026
+1 Introduction
+Developing Spatial Intelligence (SI) Sytems to perceive, reason, and interact within the physical
+world is a long-standing challenge across cognitive science (Tolman, 1948; Shepard & Metzler,
+1988; Newcombe & Huttenlocher, 2000), symbolic AI (Kuipers, 1978; 2000; Harnad, 1990), and
+robotics (Durrant-Whyte & Bailey, 2006; Thrun, 2002). However, progress has historically been
+limited by the lack of a unified model capable of integrating perception, reasoning, and action. The
+emergence of Multimodal Large Language Models (MLLMs), with their powerful vision-language
+understanding and reasoning capabilities, has opened new opportunities for advancing SI.
+Recentresearchonspatialintelligence(SI)inMLLMshaslargelyfollowedatask-centrictrajectory.
+Early works focused on simple spatial tasks in single images (Ma et al., 2024; Wang et al., 2024a;
+Fu et al., 2024), such as relative object positioning and size estimation. Later studies expanded
+these tasks to 3D grounding, detection, and captioning from point clouds (Zhu et al., 2024; Hong
+et al., 2023; Xu et al., 2024). With multi-view and video-capable VLMs, benchmarks quickly
+diversified (Yang et al., 2025a; Wang et al., 2025d;c; Gholami et al., 2025; Yang et al., 2025c; Jia
+etal.,2025),coveringawidearrayoftasksfromspatiotemporalreasoningtoegocentricanddynamic
+object understanding.
+However, this prevailing task-centric approach, while foundational, has naturally led to a landscape
+ofbenchmarksthatoftenfocusonspecific,sometimesoverlapping,spatialtasks. Thisfragmentation
+makesitchallengingtogainaholisticviewofanMLLM’soverallspatialintelligenceortounderstand
+the inherent dependencies between these skills. This motivates us to ask:
+Can we move beyond fragmented, task-centric benchmarks to uncover a compact
+set of atomic capabilities that capture spatial intelligence and its dependencies?
+Inspired by Piaget’s theory in cognitive science Piaget (2013), we advocate acapability-centric
+paradigm for spatial intelligence (SI). We further decompose SI into a multi-level capability tree
+(Fig.1). Basedonthistaxonomy,weconstructthefirstcomprehensivebenchmarkforSIinMLLMs,
+offering comprehensive ability coverage and a diverse set of evaluation metrics beyond simple
+multiple-choicetestsusedinpriorworks. WealsodevelopaSpatialEngine,anextendableannotation
+framework. Itintegratesmultipleperceptionmodelstogenerateannotationsforeachcapabilitylayer.
+Atthehighestlevel(L4),weproposeaspatialactionmappingwhichconvertscontinuousactionsinto
+discrete,high-levelmotionprimitives,providingMLLMswithanexecutableactionspaceforagentic
+tasks. We leverage the proposed Spatial Engine to generate diverse annotation data from public
+datasets covering video games, robot manipulation, and human-object interactions, with details
+provided in Sec. 3.1. To cover the lower levels (L1–L3), we extract relevant portions from multiple
+public datasets and benchmarks (Yang et al., 2025c;a; Jia et al., 2025; Lin et al., 2025; Wang et al.,
+2025c;2024a;Zhuetal.,2024;Yinetal.,2025;Xuetal.,2025;Liuetal.,2025),reorganizingthem
+onto our capability tree. We further enrich questions and evaluation protocols to improve coverage
+and cross-layer overlap. To address missing capabilities, we introduceSpatialPlus, generated by
+SpatialEngine,encompassingOrientation(L1),MemoryRetrieval(L2),RelationalReasoning(L3),
+and Agentic Competence (L4). All resulting data and annotations are systematically organized and
+re-weighted within the SpatialTree benchmark to ensure balanced evaluation across layers.
+Evaluation on SpatialTree-Bench reveals a clear hierarchical structure in spatial intelligence: low-
+levelabilities(L1–L2)arelargelyindependent,whereashigher-levelabilities(L3–L4)exhibitstrong
+interdependencies, reflecting their compositional nature. Furthermore, we observe that certain
+foundational abilities—Geo.Size (L1), Geo.Dist (L1), and Relat.Corr (L2)—as well as higher-level
+reasoning skills (L3) correlate strongly with agentic competence (L4). To systematically validate
+these relationships, we design anatomic promptingprotocol: for L4 navigation tasks, we provide
+MLLMs with additional prompts encoding relevant L1, L2, and L3 signals. By this, we find lower
+level information could significantly improves performance on higher 3D agentic tasks, yielding
+clear gains (e.g., w/ Corres: 12.1%, w/ Depth: 22.1%, w/ Size: 5.1%).
+In summary, our work makes the following key contributions:
+•Proposea capability-centric paradigm for spatial intelligence, offering a systematic and
+interpretable framework beyond task-centric benchmarks.
+2
+
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161Under review as a conference paper at ICLR 2026
+•ConstructthefirstcomprehensivebenchmarkforspatialintelligenceinMLLMs,covering
+multiple ability layers with diverse evaluation metrics.
+•Developa Spatial Engine and a spatial action mapping to generate annotations and enable
+MLLMs to perform interactive tasks.
+•Validatethe hierarchical classification and inter-level dependencies through experiments,
+demonstrating that high-level abilities benefit from lower-level information.
+2 Related Work
+Spatial Cognitive Modeling.Understanding spatial cognition has long been a central goal in
+cognitive science and AI. A common insight from classical theories is that spatial abilities are
+hierarchical, ranging from basic perception and sensorimotor interactions to higher-level reasoning
+and planning. Piaget Piaget (2013) highlighted the developmental progression of such abilities,
+Tolman Tolman (1948) introduced the idea of cognitive maps to represent environments for flexible
+navigation,andKuipersKuipers(1978;2000)formalizedahierarchicalspatialrepresentationlinking
+local perception to global knowledge. More recent symbolic and neural approaches Shepard &
+Metzler(1988);Newcombe&Huttenlocher(2000)extendtheseinsightstocomputationalmodelsof
+spatial representation, memory, and reasoning. These studies collectively motivate ourSpatialTree,
+which organizes spatial intelligence into multi-level capabilities, bridging classical theory with
+systematic computational evaluation.
+Multi-modal Large Language Models.The success of GPT-3 Brown et al. (2020) and GPT-
+3.5 OpenAI (2023a) demonstrated the potential of large language models for complex linguistic
+understanding and reasoning. GPT-4V OpenAI (2023b) extends GPT-4 Achiam et al. (2023) with
+visualinputs,enablingsingle-imageunderstandingandbasicspatialreasoning. Open-sourcedmod-
+elssuchasLLaVALiuetal.(2023)andQwenVLBaietal.(2023)graduallyaddedmulti-imageand
+videocapabilities,supportingspatiotemporalreasoning. Reasoning-augmentedLLMs,pioneeredby
+OpenAIO1Jaechetal.(2024)andDeepSeek-R1Guoetal.(2025a),integratechain-of-thoughtand
+reinforcement learning to enhance high-level inference. Building on these advances, GPT-4O Hurst
+et al. (2024) and Gemini 2.5 Comanici et al. (2025) combine perception and reasoning to support
+complex, agentic decision-making. Collectively, these milestones progressively enable hierarchical
+spatialintelligenceinMLLMs,motivatingstructuredbenchmarksandevaluationframeworksacross
+low-level perception, intermediate reasoning, and high-level agentic competence.
+Benchmarks for Spatial Intelligence in MLLMs.Benchmarks for spatial abilities in MLLMs
+have evolved alongside the models themselves. Early efforts, such as BLINK Fu et al. (2024),
+SpatialEval Wang et al. (2024a), and 3DSR-Bench Ma et al. (2024), focused on evaluating spatial
+understanding tasks in single images, including distance estimation, relational question answering,
+and spatial captions. As MLLMs increasingly support multi-frame and video inputs, benchmarks
+such as VSI-Bench Yang et al. (2025a) and MMSI-Bench Yang et al. (2025c) have emerged to
+evaluatespatialreasoningacrossmultipleviewsanddynamicscenes. Tofurtherenrichtaskdiversity
+and coverage, Omnispatial Jia et al. (2025), SITE Wang et al. (2025d), and IR3D-Bench Liu et al.
+(2025) extend benchmarks to geometry puzzles, dynamic reasoning, and inverse rendering tasks.
+Built upon prior efforts, our SpatialTree benchmark systematically organizes spatial abilities into a
+hierarchical framework, providing the first thorough evaluation across different capabilities.
+3 SpatialTree: Our Framework for Spatial Intelligence
+Inthissection,wepresentSpatialTree,atop-downhierarchicaldecompositionofspatialcapabilities
+intofourlevels,fromhigh-levelagenticcompetence(L4)tofoundationalperception(L1). Different
+samples for different level of capabilities are shown in Figure 2.
+3.1Agentic Competence
+WebeginfromtheultimateobjectiveofaSpatialAIAgent—anMLLM-drivensystemthatintegrates
+multi-modal observations, updates its memory, and selects actions to interact with the 3D world in
+3
+
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215Under review as a conference paper at ICLR 2026
+L4
+L3
+L1 Open-world Exploration in 3D 
+Games
+Long-Horizon Task Planning 
+and Execution
+L2
+Camera Motion 
+UnderstandingPerspectiveRobot Control in the Physical World
+Size Estimation
+Relative Direction
+ Motion Perception
+Absolute
+DistanceGravity & FoV
+3D Detection
+Matching
+ Object Orientation
+Ego-Motion
+Shape Perception
+Geometry 
+Puzzles
+Route 
+Planning
+Operation 
+Planning
+Dynamics 
+Analysis
+Spatial Relation Reasoning
+Cognitive Map
+ 3D 
+Affordance
+Spatial Caption
+ Relation
+Figure2:A gallery of representative tasks.Leveragingourcapabilitytree,we’vebuiltathorough
+benchmark covering diverse spatially relevant tasks in all aspects.
+an intuitive manner. Formally, the agent performs sequential decision-making by modeling:
+(𝑆𝑡,𝐴𝑡,𝑀𝑡)∼𝑃 𝜃
+·𝑂𝑡,𝐻𝑡−1
+, 𝐻 𝑡−1={(𝑂0,𝐴0,𝑀0),...,(𝑂 𝑡−1,𝐴𝑡−1,𝑀𝑡−1)}(1)
+where𝑂 𝑡∈Oisthecurrentmulti-modalobservation,𝑆 𝑡∈Stheinternallatentstate(e.g.,goal,plan,
+or belief),𝐴 𝑡∈Athe chosen action, and𝑀 𝑡∈Mthe updated memory representation. MLLMs
+are expected to output interactive actions executable across 3D environments and embodiments,
+suchasgames,simulators,andthephysicalworld. UnlikeVision-LanguageActionModels(VLAs)
+decording the low-level control signals in robotics (Intelligence et al., 2025), MLLMs take the
+language as the only interface to link with environments like GUI Agents (Qin et al., 2025).
+Spatial Action Mapping.In the context of spatial agents, navigation and manipulation represent
+the most common forms of interaction within 3D environments. We address each with a distinct
+actionspacedesign. Fornavigation,weconceptualizeagentmovementasaseriesofcameramotion
+controls (referring to recent video world models (Ball et al., 2025; Mao et al., 2025a)). To enable
+precise and intuitive control, we decompose complex camera movements into a set of fundamental
+motion primitives inspired by established cinematography techniques. This approach allows us to
+translate high-level language instructions (e.g., "move to the left," "look up") into a structured, low-
+levelactionspace. Thesixfundamentalprimitives,theircorrespondingcinematicterms,degreesof
+freedom (DoF), and parameterization are detailed in Table 1.
+Formally,thecameratrajectoriesaredefinedwithaseriesofCamera-to-World(C2W)transformation
+matricesT motion={T|𝑖
+0,𝑖=0,1,...,𝑡},whilethecameratransformationateachmomentisT 𝑖→𝑖+1=
+T𝑖+1T−1
+𝑖, 𝑖=0,1,...,𝑡−1. Then the continuous camera transformation can be decomposed into
+different components corresponding to each motion primitive, and discretized into the navigation
+action𝐴 navusing a speed threshold:
+Anav
+𝑖=T𝑖→𝑖+1={ΔR,Δt}≈{𝑡 𝑖·𝑣𝑖, 𝑡𝑘·𝜔𝑘|𝑖,𝑘∈{𝑥,𝑦,𝑧}, 𝑡 𝑖,𝑡𝑘∈Z≥0},(2)
+whereΔR=(Δ𝑅 𝑥,Δ𝑅 𝑦,Δ𝑅 𝑧)representstherotationcomponentsobtainedviaEulerdecomposition,
+Δt=(Δ𝑡 𝑥,Δ𝑡𝑦,Δ𝑡𝑧)denotes the translation components along the𝑥,𝑦, and𝑧axes, and𝑡 𝑖,𝑡𝑘are
+discrete integers ranging from 0 up to the video frame rate (FPS). For manipulation, we focus on
+4
+
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269Under review as a conference paper at ICLR 2026
+Table1:Spatial Action Mapping.Thistabledefinesastandardizedinterfacethatmapscontinuous
+6-DoF motions and discrete control signals into action primitives with unified parameterization,
+enabling MLLMs to plan and execute embodied behaviors for agentic competence evaluation.
+Primitive Primitive Term Category Description Action Mapping Param. Threshold
+𝑃truck Truck TranslationMove camera left/right
+(X-axis)𝐴/𝐷 𝑣 𝑥±0.01m/s
+𝑃dolly Dolly TranslationMove camera
+forward/backward
+(Z-axis)𝑊/𝑆 𝑣 𝑧±0.01m/s
+𝑃pedestal Pedestal TranslationMove camera up/down
+(Y-axis)𝑄/𝐸 𝑣 𝑦±0.01m/s
+𝑃pan Pan RotationTurn camera left/right
+(yaw)←/→𝜔 𝑦±0.5◦/s
+𝑃tilt Tilt RotationTilt camera up/down
+(pitch)↑/↓𝜔 𝑥±0.5◦/s
+𝑃roll Roll RotationRoll camera CW/CCW
+(roll)𝑍/𝑋 𝜔 𝑧±0.5◦/s
+𝑂gripper Gripper Gripper ControlOpen or close the
+gripper𝐺/𝐻State∈{0,1}N/A
+𝑂push/pull Push/Pull GesturePush or pull object
+along forward axis𝑃/𝐿Dir.∈{−1,+1}N/A
+𝑂grab Grab Gesture Grab or release object None State∈{0,1}𝐺/𝐻
+two representative scenarios to simplify the problem and enable controlled evaluation: human-
+hand manipulation and robotic gripper manipulation. For the gripper setting, we include gripper
+open/close actions along with wrist-level 6-DoF motion. For the human-hand setting, we define a
+small set of intuitive gesture primitives (i.e., push, pull, grab) seen in Table. 1 that capture essential
+interactionpatterns. Thesemanuallydefinedmappingscreateaunifiedyettractableactionspacefor
+analyzing MLLMs’ planning and manipulation competence.
+Building on the proposed spatial action mapping, we curate annotated data from diverse sources,
+including human-hand manipulation videos, navigation video games, robotic arm manipulation
+datasets, and simulation environments. This unified dataset enables us to evaluate whether MLLMs
+can accurately plan and execute actions in the defined metric action space. Further implementation
+details are provided in Sec. 4 and in the experimental section.
+3.2Mental Simulation
+Reasoning and planning prior to action execution are essential components of Multimodal Large
+Language Models (MLLMs), aligning naturally with the Chain-of-Thought paradigm in language
+model reasoning. In spatial cognitive science, this process is commonly referred to as mental
+simulation. We further decompose mental simulation into two core components: causal reasoning
+and sequential planning.
+Causal Reasoningallows MLLMs to model spatial interactions, physical dynamics, and entity
+relationships within a simulated mental space. It includes reasoning about object geometry (e.g.,
+how shapes interlock in spatial puzzles), predicting motion under kinematic constraints (e.g., how
+an object traverses a path), and analyzing semantic–spatial relations (e.g., object A is left of object
+B). By mentally simulating cause–effect chains in spatial scenarios, MLLMs establish the logical
+substrate for subsequent planning.
+Sequential Planningconvertscausalinsightsintocoherent,goal-directedactionplansexpressedin
+language. It entails designing high-level, step-by-step strategies (e.g., "first move toward the door,
+then turn right, and finally interact with the handle") and generating abstract routes that respect
+spatial logic (e.g., "go around the table to reach the sofa"). By chaining linguistic action primitives,
+MLLMs produce strategic plans that ensure the conceptual sequence aligns with the overarching
+goal before any low-level execution.
+3.3Mental Mapping
+Level3’sadvancedmentalsimulationrequiresacoherentinternalworldmodel,afoundationprovided
+byLevel2’smentalmapping. Thisprocessconstructsandmaintainsadynamic3Drepresentationof
+5
+
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323Under review as a conference paper at ICLR 2026
+the environment by relying on two essential facets. The first is spatial understanding: the ability to
+interprettheimmediatescene. Thisincludesrecognizingobjectsandtheiraffordances,mappingthe
+spatial relations between them, and understanding the scene from various perspectives (perspective
+taking). In essence, it’s about making sense of what is currently perceived. The second facet is
+memory. It allows the agent to retain this understanding over time, retrieving past observations to
+buildacognitivemapthatextendsfarbeyondthecurrentfieldofview. Thiscreatesapersistentand
+comprehensive mental model of the world. Ultimately, these two facets—understanding the present
+andrememberingthepast—organizeandintegratethefoundationalperceptualdatafromL1,paving
+the way for L3’s predictive simulations.
+3.4Perception
+Perception forms the foundation for high-level spatial reasoning. We categorize L1 Perception into
+five core aspects:Orientation: Captures spatial alignment, crucial for understanding the agent’s
+pose and maintaining balance. Key sub-tasks areGravity(estimating pitch and roll to determine
+“up”/“down”) andObject Orientation(recognizing object poses), supporting scene reconstruction
+and manipulation.Geometry: Involves spatial form, size, and metric relationships. Sub-tasks
+includeSize,Shape, andDistance, enabling reasoning about object properties and facilitating nav-
+igation and grasping.Motion: Encodes spatial dynamics over time. Sub-tasks areEgocentric
+Motion(self-motion estimation) andAllocentric Motion(tracking object or scene changes), critical
+for predicting future states and planning actions.Relation: Concerns spatial relationships between
+entities. Sub-tasks includeCorrespondence(matching entities across views) andRelative Direc-
+tion(e.g., left of, in front of), supporting object tracking, path planning, and interaction reasoning.
+Localization: Anchors perception within 3D space. Sub-tasks include3D Detection(identify-
+ing object extents) and3D Grounding(associating observations with coordinates), enabling scene
+reconstruction, navigation, and embodied reasoning.
+4 Spatial Engine: Our Data Annotator Pipeline
+We propose an extensible data engine designed to generate annotations for every layer of the Spa-
+tialTree. Our approach begins with a diverse set of low-level 3D perception models, each tailored
+to a specific task, including metric depth estimation (Wang et al., 2025b; Yang et al., 2024), ori-
+entation estimation (Wang et al., 2024b), gravity estimation (Veicht et al., 2024), correspondence
+matching (Leroy et al., 2024; Xiangli et al., 2025), 3D localization (Mao et al., 2025b), 3D point
+tracking(Xiaoetal.,2024;2025),andcameraposeestimation(Wangetal.,2025a;e). Nevertheless,
+allthesecomprehensive3Dperceptionmodelscanbeseamlesslyencompassedwithinourtaxonomy
+of five perception abilities.
+Data Annotation Framework.As shown in Figure 3, our pipeline encapsulates three hierarchical
+entities: models, pipelines, and workflows. The lowest level comprises the perception models de-
+scribed above, along with advanced MLLMs for semantic captioning. Building upon these models,
+we construct several reusable pipelines that serve as atomic components for higher-level workflows.
+Specifically, we implement 12 pipelines, including metric 3D reconstruction, 3D orientation align-
+ment, 3D point tracking, and affordance pointing. Each pipeline processes raw sensory data, such
+as RGB images or 3D point clouds, and produces intermediate outputs that are further integrated
+by the workflows. Based on these pipelines, we assemble 24 workflows, each targeting a specific
+perception ability or a combination of abilities, to generate comprehensive annotations for our Spa-
+tialTree. Thesereusablepipelinesnotonlystreamlinetheannotationprocessbutalsofacilitatefuture
+extension to new tasks or models. Overall, this hierarchical design ensures modularity, scalability,
+and a clear separation of responsibilities across models, pipelines, and workflows.
+Data Resources.AsseeninFig.A,ourSpatialTree-Benchisconstructedbysystematicallyreorganiz-
+ingabroadrangeofrecentdatasets,includingVSI-Bench(Yangetal.,2025a),MMSI-Bench(Yang
+et al., 2025c), LLaVa3D (Zhu et al., 2024), SpatialEval (Wang et al., 2024a), MindCube (Yin et al.,
+2025),CameraBench(Linetal.,2025),Omnispatial(Jiaetal.,2025),EmbodiedBench(Yangetal.,
+2025b), SpatialViz (Wang et al., 2025c), Multi-SPA (Xu et al., 2025), and 3DSR-Bench (Ma et al.,
+2024). To address their scattered capability coverage and over-reliance on simple multiple-choice
+questions,wefirstmapeachquestiontoourSpatialTreeframework. Wethenenhancetheevaluation
+protocol;forinstance,complexreasoningtasksfromCameraBenchandMMSI-Benchareconverted
+6
+
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377Under review as a conference paper at ICLR 2026
+to a hybridmulti-option + GPT-4 evaluationformat for a finer-grained assessment. Furthermore,
+to address the remaining gaps in capability coverage, we introduce ourSpatialPlusdataset. It is
+specifically designed to target underrepresented abilities such as Orientation (L1), Shape (L1), and
+Spatial Caption (L2), with a primary emphasis on the complex tasks of Agentic Competence (L4).
+Togeneratethisdata,weleverageourproprietarySpatialEnginetoautomaticallycreateannotations
+fromadiversearrayofvideosources,including3Dreconstructiondatasets,in-gamefootageJuetal.
+(2024), egocentric manipulation videos (Hoque et al., 2025), and robotics data (Khazatsky et al.,
+2024). More implementation details are discussed in Sec. 6
+3D Perception Models
+Geometry 
+Models
+Orientation 
+Models
+Motion
+Models
+Relation
+Models
+Localization
+Models
+Worflow 
+Operator
+Advanced MLLMs
+Doubao
+ QwenVL
+ GPT
+ Gemini
+ Open-SourcedPipelines
+Metric 3D Reconstruction
+3D Orientation Alignment
+3D Grounding & Detection
+3D Point Tracking
+Affordance Pointing
+Video Caption & QA
+......Workflows for Annotations 
+Input Data
+Games VideoEgo-Data
+Robots
+ Internet 
+#1 Distance (L1)
+...#27 Navigation (L4)
+Pipe1: Depth Est
+Pipe2: Sample Point
+Pipe3: QA GeneratePipe1: Metric 3D Rec
+Pipe2: Goal Caption
+Pipe3: Cam2action
+Annotations for Workflow #27
+Pipe1{
+  "goal": "Find a 
+pair of trousers in 
+the room."
+}
+Pipe2{
+  "actions": 
+[ "W",  "D", "↑","↻",
+  ]
+}Pipe3
+Figure 3:SpatialTree Data Engine.A highly modular and scalable framework that decomposes
+high-level spatial tasks into low-level components, supporting human-in-the-loop supervision.
+5 Experiments
+This section presents a comprehensive evaluation of the hierarchical spatial reasoning capabilities
+of advanced Multimodal Large Language Models (MLLMs) using ourSpatialTreeframework. Our
+objectivesaretwofold: 1)toestablishafine-grainedcapabilitybenchmarkforcurrentMLLMsacross
+all levels of theSpatialTree, and 2) to analyze the dependencies between foundational spatial skills
+and their influence on higher-level abilities, such as spatial reasoning.
+5.1 Models and Metrics
+Benchmarked Models.We select a diverse set of state-of-the-art MLLMs for our evaluation,
+ensuring broad coverage of model families, architectures, and functional paradigms. Our selection
+spans three key dimensions: (1)reasoning-focused closed-source modelsrenowned for advanced
+general reasoning capabilities, including GPT-4o (Hurst et al., 2024), and GPT-5 (OpenAI, 2025);
+Google’s Gemini 2.5 Flash and Gemini 2.5 Pro (Comanici et al., 2025); Anthropic’s Claude 3.7
+Sonnet (Anthropic, 2025); and GLM-4.5V Hong et al. (2025), SeedVL1.5 Guo et al. (2025b); (2)
+non-reasoningmodelssuchasGemini-2.5-Pro-NonthinkComanicietal.(2025),Gemini-2.5-Flash-
+Nonthinking, and SeedVL1.5-Nonthink (Guo et al., 2025b), which represent specialized paradigms
+outside traditional reasoning-centric designs; and (3)open-source models(e.g., Qwen25VL (Bai
+et al., 2025) series and Kimi-VL (Team et al., 2025)) that reflect the cutting edge of community-
+driven research. This deliberate diversity allows us to compare performance across reasoning vs.
+non-reasoningparadigms,closedvs. open-sourceecosystems,andvaryingscales(from32Bto72B
+7
+
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431Under review as a conference paper at ICLR 2026
+L1 Perception L2 Mental Mapping L3 Mental Simulation L4 Agentic Competence
+Methods Rank Avg. Geom. Motion Rel. Local. Orient. Underst. Memory Caus. Reas. Seq. Plan. Goal Exec. Open Expl.
+Proprietary Models
+GPT-4o 5 44.2 43.4 30.0 59.7 73.3 41.2 61.7 41.1 37.2 53.2 19.0 22.0
+GPT5 4 46.7 44.5 34.0 58.4 77.9 36.1 60.6 55.3 38.6 52.1 23.6 19.4
+Gemini2.5 Flash NT 6 44.1 45.3 28.6 60.5 70.6 45.1 56.6 50.7 34.2 50.3 16.7 21.3
+Gemini2.5 Pro NT 3 46.9 51.4 27.9 64.2 75.1 45.4 62.8 49.8 38.6 52.9 21.8 18.3
+claude3.7-sonnet NT 9 43.4 39.2 26.0 61.6 66.2 40.3 58.1 45.6 38.0 53.0 21.1 21.4
+SeedVL1.5 NT 12 38.9 35.8 30.7 63.4 71.2 39.0 61.0 27.6 37.5 53.6 10.9 6.6
+Thinking Models
+SeedVL1.5-Thinking 7 43.5 48.0 29.3 62.6 76.4 42.1 62.4 42.0 34.3 48.2 16.3 14.7
+GLM4.5V 10 42.3 48.4 25.9 67.0 71.7 42.9 54.0 42.9 37.4 52.1 17.0 9.3
+Gemini2.5-Pro 150.953.9 33.9 64.6 77.2 45.8 62.9 60.7 44.0 55.8 24.9 24.7
+Gemini2.5-Flash 2 47.8 42.9 25.9 62.8 75.5 42.2 59.8 60.5 36.6 53.7 22.7 25.7
+claude3.7-sonnet 8 43.4 41.1 30.6 66.6 66.5 27.8 58.2 37.4 40.1 59.1 24.7 24.5
+Open-source Models
+Qwen2.5VL-3B 14 32.0 29.0 29.3 38.3 53.4 33.4 43.7 28.0 26.7 41.5 18.3 11.7
+Qwen2.5VL-7B 16 29.0 28.2 31.2 36.2 52.4 30.3 43.0 18.6 26.6 34.5 14.3 11.8
+Qwen2.5VL-32B 15 31.5 33.5 29.3 39.6 58.7 35.0 41.7 16.1 27.0 41.7 20.2 14.1
+Qwen2.5VL-72B 1141.338.5 22.7 59.366.0 35.9 59.0 36.4 32.6 53.0 23.8 20.1
+Kimi-VL-A3B-Instruct 13 32.5 30.7 23.3 39.3 58.0 33.3 49.4 31.1 26.6 35.0 16.2 7.8
+Table2:Our-Bench. Dark gray indicatesthebestresultamongallmodelsand light gray indicates
+the best result among open-source models. NT denotes the non-thinking model.Avgis aggregated
+by our weighted strategy seen in Sec. 6.
+parameters),providingaholisticviewofthecurrentMLLMlandscape. Acompletelistofevaluated
+models is provided in Table 2.
+Evaluation Metrics.Our evaluation employs a multi-faceted set of metrics tailored to the specific
+abilities at each level of the SpatialTree. For perception and understanding tasks (L1-L2), we
+primarily use accuracy-based metrics, such as classification accuracy for object recognition, Mean
+Squared Error (MSE) for distance estimation, and angular difference for orientation tasks. For
+higher-level reasoning and planning tasks (L3-L4), we measure task success rates. In the case of
+agentic tasks (L4), we further analyze the quality of generated actions using metrics like positional
+error (L2 distance) and orientation error (angular difference) against ground-truth trajectories.
+5.2 Performance on SpatialTree-Bench
+A
+BC
+Figure 4:Inter-Capability Dependencies via Pearson
+Correlation.(A) Correlation matrix among higher-level
+capabilities (L3 and L4); (B) Correlation matrix among
+foundational L1 capabilities; (C) Salient low-level abilities
+influencing higher-level tasks.We first present the overall perfor-
+mance of all benchmarked models
+on our proposed SpatialTree-Bench,
+with detailed results summarized in
+Table 2. In our benchmark, the rea-
+soningmodelsachieveclearimprove-
+ment than their non-thinking ver-
+sion, e.g. Gemini2.5-Pro (53.9) v.s.
+Gemini2.5-Pro-NT (51.4).
+5.3 Analysis
+of Ability Dependencies
+To explore the structure of spatial
+intelligence in MLLMs, we analyze
+thedependenciesamongfine-grained
+sub-abilities using the Pearson cor-
+relation coefficient. A high positive
+correlation indicates that models per-
+forming well on one ability tend to
+perform well on the other. Fig. 4
+showsaheatmapofthesecorrelations
+across all models.
+The heatmap suggests a compo-
+sitional nature in spatial abilities:
+higher-level capabilities (L3 and L4)
+exhibit stronger correlation as shown
+inregionA.Thisreflectsthatcomplextasks,suchasrouteplanningandcausalreasoning,dependon
+overlappingfoundationalsub-skills. Asaresult,performanceinonehigh-levelabilityoftenpredicts
+8
+
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485Under review as a conference paper at ICLR 2026
+w/ visual correspondencew/o visual correspondence
+Initial state
+Target state
+Extra Visual Info.
+Figure 5:Correspondence Prompting for Navigation.The correspondence prompt guides
+Gemini2.5-pro to navigate and move more accurately within 3D environments.
+performanceinothers. Atthelowestlevel(L1),atomicabilitiesexhibitweakcorrelations,indicating
+thattheyarelargelyindependent. Foundationalskillssuchasshapeperception,distanceestimation,
+and relative direction capture distinct aspects of spatial perception. This orthogonality provides a
+diverse and comprehensive perceptual foundation for the model.
+Finally, we identify a set of low-level critical abilities that act as prerequisites for a wide range
+of higher-level competencies. For example, strong performance in geometric perception tasks,
+particularly distance estimation (L1-Geo.Dist) and size estimation (L1-Geo.Size), shows a strong
+positive correlation with many advanced abilities, including open exploration (L4-Open.Expl.),
+and causal reasoning (L3-Seq.Plan.Ope, L3-Caus.Reas.Rel). This indicates that a model’s ability
+to perceive fundamental geometric properties is a cornerstone upon which more abstract spatial
+reasoning is constructed. These findings strongly support our hypothesis that a core set of atomic
+abilities forms the basis for the emergence of broader spatial intelligence in MLLM.
+5.4 Atomic Prompting for Hierarchical Scaffolding
+Toinvestigatetheinfluenceoflow-levelperceptualaidsonhigh-levelagenticreasoning,weconducted
+acontrolledexperimentontheL4agenticnavigationtask(SeeninFig.5). Theexperimentaldesign
+aimed to isolate the effect of supplementary low-level information while keeping the primary goal
+and basic visual information consistent across conditions. Specifically, in the baseline condition,
+the model was provided with visual observations of the initial and final states, alongside a defined
+6-Degrees-of-Freedom (6DoF) action space, and was tasked with generating a sequence of actions
+toconnectthetwostates. Intheexperimentalcondition,weaugmentedtheinputwithexplicitvisual
+correspondence figures to provide additional low-level guidance. We evaluated the performance in
+bothsettingsusingourL4agenticevaluationmetric. Theresultsrevealedasignificantperformance
+uplift: supplyingtheexplicitvisualcuesimprovedthemodel’sscorebyanotable12%. Thisfinding
+suggests that even for high-level planning tasks, grounding the reasoning process of MLLMs with
+explicit,low-levelvisualinformationcansubstantiallyenhancetheirperformanceincomplexspatial
+navigation scenarios.
+6 Conclusion and Discussion
+Weproposethefirstcapability-centricSpatialIntelligenceframework,SpatialTree,organizingspatial
+capabilities into four hierarchical layers. Our experiments reveal the compositional structure of
+these abilities, showing how foundational skills support higher-level performance. Leveraging the
+scalability of SpatialTree and SpatialEngine, we can systematically generate tasks and annotations
+guided by the capability hierarchy, providing a framework to enhance pre-training and SFT, and to
+accelerate the development of next-generation embodied MLLMs.
+9
+
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539Under review as a conference paper at ICLR 2026
+References
+JoshAchiam,StevenAdler,SandhiniAgarwal,LamaAhmad,IlgeAkkaya,FlorenciaLeoniAleman,
+DiogoAlmeida,JankoAltenschmidt,SamAltman,ShyamalAnadkat,etal.Gpt-4technicalreport.
+arXiv preprint arXiv:2303.08774, 2023.
+Anthropic. Claude 3.7.https://www.anthropic.com/, 2025. Accessed: 2025-09-25.
+Jinze Bai, Shuai Bai, Yunfei Chu, Zeyu Cui, Kai Dang, Xiaodong Deng, Yang Fan, Wenbin Ge,
+Yu Han, Fei Huang, et al. Qwen technical report.arXiv preprint arXiv:2309.16609, 2023.
+Shuai Bai, Keqin Chen, Xuejing Liu, Jialin Wang, Wenbin Ge, Sibo Song, Kai Dang, Peng Wang,
+Shijie Wang, Jun Tang, et al. Qwen2. 5-vl technical report.arXiv preprint arXiv:2502.13923,
+2025.
+Philip J. Ball, Jakob Bauer, Frank Belletti, Bethanie Brownfield, Ariel Ephrat, Shlomi Fruchter,
+Agrim Gupta, Kristian Holsheimer, Aleksander Holynski, Jiri Hron, Christos Kaplanis, Marjorie
+Limont, Matt McGill, Yanko Oliveira, Jack Parker-Holder, Frank Perbet, Guy Scully, Jeremy
+Shar, Stephen Spencer, Omer Tov, Ruben Villegas, Emma Wang, Jessica Yung, Cip Baetu, Jordi
+Berbel,DavidBridson,JakeBruce,GavinButtimore,SarahChakera,BilvaChandra,PaulCollins,
+Alex Cullum, Bogdan Damoc, Vibha Dasagi, Maxime Gazeau, Charles Gbadamosi, Woohyun
+Han, Ed Hirst, Ashyana Kachra, Lucie Kerley, Kristian Kjems, Eva Knoepfel, Vika Koriakin,
+Jessica Lo, Cong Lu, Zeb Mehring, Alex Moufarek, Henna Nandwani, Valeria Oliveira, Fabio
+Pardo, Jane Park, Andrew Pierson, Ben Poole, Helen Ran, Tim Salimans, Manuel Sanchez,
+Igor Saprykin, Amy Shen, Sailesh Sidhwani, Duncan Smith, Joe Stanton, Hamish Tomlinson,
+DimpleVijaykumar,LuyuWang,PiersWingfield,NatWong,KeyangXu,ChristopherYew,Nick
+Young,VadimZubov,DouglasEck,DumitruErhan,KorayKavukcuoglu,DemisHassabis,Zoubin
+Gharamani, Raia Hadsell, Aäron van den Oord, Inbar Mosseri, Adrian Bolton, Satinder Singh,
+and Tim Rocktäschel. Genie 3: A new frontier for world models. 2025.
+Tom Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared D Kaplan, Prafulla Dhariwal,
+Arvind Neelakantan, Pranav Shyam, Girish Sastry, Amanda Askell, et al. Language models are
+few-shot learners.Advances in neural information processing systems, 2020.
+Gheorghe Comanici, Eric Bieber, Mike Schaekermann, Ice Pasupat, Noveen Sachdeva, Inderjit
+Dhillon,MarcelBlistein,OriRam,DanZhang,EvanRosen,etal.Gemini2.5: Pushingthefrontier
+with advanced reasoning, multimodality, long context, and next generation agentic capabilities.
+arXiv preprint arXiv:2507.06261, 2025.
+HughDurrant-WhyteandTimBailey. Simultaneouslocalizationandmapping: parti.IEEErobotics
+& automation magazine, 13(2):99–110, 2006.
+XingyuFu,YushiHu,BangzhengLi,YuFeng,HaoyuWang,XudongLin,DanRoth,NoahASmith,
+Wei-Chiu Ma, and Ranjay Krishna. Blink: Multimodal large language models can see but not
+perceive. InEuropean Conference on Computer Vision, pp. 148–166. Springer, 2024.
+Mohsen Gholami, Ahmad Rezaei, Zhou Weimin, Yong Zhang, and Mohammad Akbari. Spa-
+tial reasoning with vision-language models in ego-centric multi-view scenes.arXiv preprint
+arXiv:2509.06266, 2025.
+Daya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu,
+Shirong Ma, Peiyi Wang, Xiao Bi, et al. Deepseek-r1: Incentivizing reasoning capability in llms
+via reinforcement learning.arXiv preprint arXiv:2501.12948, 2025a.
+Dong Guo, Faming Wu, Feida Zhu, Fuxing Leng, Guang Shi, Haobin Chen, Haoqi Fan, Jian Wang,
+Jianyu Jiang, Jiawei Wang, et al. Seed1. 5-vl technical report.arXiv preprint arXiv:2505.07062,
+2025b.
+Stevan Harnad. The symbol grounding problem.Physica D: Nonlinear Phenomena, 42(1-3):
+335–346, 1990.
+Wenyi Hong, Wenmeng Yu, Xiaotao Gu, Guo Wang, Guobing Gan, Haomiao Tang, Jiale Cheng,
+Ji Qi, Junhui Ji, Lihang Pan, et al. Glm-4.1 v-thinking: Towards versatile multimodal reasoning
+with scalable reinforcement learning.arXiv e-prints, pp. arXiv–2507, 2025.
+10
+
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593Under review as a conference paper at ICLR 2026
+Yining Hong, Haoyu Zhen, Peihao Chen, Shuhong Zheng, Yilun Du, Zhenfang Chen, and Chuang
+Gan. 3d-llm: Injectingthe3dworldintolargelanguagemodels.AdvancesinNeuralInformation
+Processing Systems, 36:20482–20494, 2023.
+Ryan Hoque, Peide Huang, David J. Yoon, Mouli Sivapurapu, and Jian Zhang. Egodex: Learning
+dexterous manipulation from large-scale egocentric video, 2025. URLhttps://arxiv.org/
+abs/2505.11709.
+AaronHurst,AdamLerer,AdamPGoucher,AdamPerelman,AdityaRamesh,AidanClark,AJOs-
+trow, Akila Welihinda, Alan Hayes, Alec Radford, et al. Gpt-4o system card.arXiv preprint
+arXiv:2410.21276, 2024.
+Physical Intelligence, Kevin Black, Noah Brown, James Darpinian, Karan Dhabalia, Danny Driess,
+Adnan Esmail, Michael Equi, Chelsea Finn, Niccolo Fusai, et al.\𝜋_{0.5}: a vision-language-
+action model with open-world generalization.arXiv preprint arXiv:2504.16054, 2025.
+Aaron Jaech, Adam Kalai, Adam Lerer, Adam Richardson, Ahmed El-Kishky, Aiden Low, Alec
+Helyar, Aleksander Madry, Alex Beutel, Alex Carney, et al. Openai o1 system card.arXiv
+preprint arXiv:2412.16720, 2024.
+Mengdi Jia, Zekun Qi, Shaochen Zhang, Wenyao Zhang, Xinqiang Yu, Jiawei He, He Wang, and
+Li Yi. Omnispatial: Towards comprehensive spatial reasoning benchmark for vision language
+models.arXiv preprint arXiv:2506.03135, 2025.
+XuanJu,YimingGao,ZhaoyangZhang,ZiyangYuan,XintaoWang,AilingZeng,YuXiong,Qiang
+Xu, and Ying Shan. Miradata: A large-scale video dataset with long durations and structured
+captions.Advances in Neural Information Processing Systems, 37:48955–48970, 2024.
+Alexander Khazatsky, Karl Pertsch, Suraj Nair, Ashwin Balakrishna, Sudeep Dasari, Siddharth
+Karamcheti, Soroush Nasiriany, Mohan Kumar Srirama, Lawrence Yunliang Chen, Kirsty
+Ellis, et al. Droid: A large-scale in-the-wild robot manipulation dataset.arXiv preprint
+arXiv:2403.12945, 2024.
+Benjamin Kuipers. Modeling spatial knowledge.Cognitive science, 2(2):129–153, 1978.
+Benjamin Kuipers. The spatial semantic hierarchy.Artificial intelligence, 119(1-2):191–233, 2000.
+Vincent Leroy, Yohann Cabon, and Jérôme Revaud. Grounding image matching in 3d with mast3r.
+InEuropean Conference on Computer Vision, pp. 71–91. Springer, 2024.
+Zhiqiu Lin, Siyuan Cen, Daniel Jiang, Jay Karhade, Hewei Wang, Chancharik Mitra, Tiffany Ling,
+Yuhan Huang, Sifan Liu, Mingyu Chen, et al. Towards understanding camera motions in any
+video.arXiv preprint arXiv:2504.15376, 2025.
+Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. Visual instruction tuning.Advances
+in neural information processing systems, 36:34892–34916, 2023.
+Parker Liu, Chenxin Li, Zhengxin Li, Yipeng Wu, Wuyang Li, Zhiqin Yang, Zhenyuan Zhang,
+Yunlong Lin, Sirui Han, and Brandon Y Feng. Ir3d-bench: Evaluating vision-language model
+scene understanding as agentic inverse rendering.arXiv preprint arXiv:2506.23329, 2025.
+Wufei Ma, Haoyu Chen, Guofeng Zhang, Yu-Cheng Chou, Celso M de Melo, and Alan Yuille.
+3dsrbench: A comprehensive 3d spatial reasoning benchmark.arXiv preprint arXiv:2412.07825,
+2024.
+Xiaofeng Mao, Shaoheng Lin, Zhen Li, Chuanhao Li, Wenshuo Peng, Tong He, Jiangmiao Pang,
+Mingmin Chi, Yu Qiao, and Kaipeng Zhang. Yume: An interactive world generation model.
+CoRR, abs/2507.17744, 2025a.
+Yongsen Mao, Junhao Zhong, Chuan Fang, Jia Zheng, Rui Tang, Hao Zhu, Ping Tan, and Zihan
+Zhou. Spatiallm: Training large language models for structured indoor modeling.arXiv preprint
+arXiv:2506.07491, 2025b.
+11
+
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647Under review as a conference paper at ICLR 2026
+NoraNewcombeandJanellenHuttenlocher.Makingspace: Thedevelopmentofspatialrepresenta-
+tion and reasoning. MIT press, 2000.
+OpenAI. Openaiapidocumentation.https://platform.openai.com/docs/models/gpt-3-5,
+2023a. Accessed on September 19, 2025.
+OpenAI. Gpt-4v(ision) system card, 2023b. URLhttps://cdn.openai.com/papers/GPTV_
+System_Card.pdf. Accessed: 2025-09-19.
+OpenAI. Gpt-5 system card.https://openai.com/index/gpt-5-system-card/, 2025. Ac-
+cessed: 2025-09-25.
+Jean Piaget.The construction of reality in the child. Routledge, 2013.
+Yujia Qin, Yining Ye, Junjie Fang, Haoming Wang, Shihao Liang, Shizuo Tian, Junda Zhang,
+Jiahao Li, Yunxin Li, Shijue Huang, Wanjun Zhong, Kuanye Li, Jiale Yang, Yu Miao, Woyu
+Lin, Longxiang Liu, Xu Jiang, Qianli Ma, Jingyu Li, Xiaojun Xiao, Kai Cai, Chuang Li, Yaowei
+Zheng,ChaolinJin,ChenLi,XiaoZhou,MinchaoWang,HaoliChen,ZhaojianLi,HaihuaYang,
+HaifengLiu,FengLin,TaoPeng,XinLiu,andGuangShi. UI-TARS:pioneeringautomatedGUI
+interaction with native agents.CoRR, abs/2501.12326, 2025.
+JeremyReizenstein,RomanShapovalov,PhilippHenzler,LucaSbordone,PatrickLabatut,andDavid
+Novotny. Common objects in 3d: Large-scale learning and evaluation of real-life 3d category
+reconstruction. InInternational Conference on Computer Vision, 2021.
+ShennaShepardandDouglasMetzler. Mentalrotation: effectsofdimensionalityofobjectsandtype
+oftask.Journalofexperimentalpsychology: Humanperceptionandperformance,14(1):3,1988.
+Kimi Team, Angang Du, Bohong Yin, Bowei Xing, Bowen Qu, Bowen Wang, Cheng Chen,
+Chenlin Zhang, Chenzhuang Du, Chu Wei, et al. Kimi-vl technical report.arXiv preprint
+arXiv:2504.07491, 2025.
+Sebastian Thrun. Probabilistic robotics.Communications of the ACM, 45(3):52–57, 2002.
+Edward C Tolman. Cognitive maps in rats and men.Psychological review, 55(4):189, 1948.
+AlexanderVeicht,Paul-EdouardSarlin,PhilippLindenberger,andMarcPollefeys. Geocalib: Learn-
+ing single-image calibration with geometric optimization. InEuropean Conference on Computer
+Vision, pp. 1–20. Springer, 2024.
+Jianyuan Wang, Minghao Chen, Nikita Karaev, Andrea Vedaldi, Christian Rupprecht, and David
+Novotny. Vggt: Visual geometry grounded transformer. InProceedings of the Computer Vision
+and Pattern Recognition Conference, pp. 5294–5306, 2025a.
+Jiayu Wang, Yifei Ming, Zhenmei Shi, Vibhav Vineet, Xin Wang, Yixuan Li, and Neel Joshi. Is a
+picture worth a thousand words? delving into spatial reasoning for vision language models. In
+The Thirty-Eighth Annual Conference on Neural Information Processing Systems, 2024a.
+Ruicheng Wang, Sicheng Xu, Yue Dong, Yu Deng, Jianfeng Xiang, Zelong Lv, Guangzhong Sun,
+XinTong,andJiaolongYang. Moge-2: Accuratemonoculargeometrywithmetricscaleandsharp
+details, 2025b. URLhttps://arxiv.org/abs/2507.02546.
+Siting Wang, Luoyang Sun, Cheng Deng, Kun Shao, Minnan Pei, Zheng Tian, Haifeng Zhang, and
+Jun Wang. Spatialviz-bench: Automatically generated spatial visualization reasoning tasks for
+mllms.arXiv preprint arXiv:2507.07610, 2025c.
+Wenqi Wang, Reuben Tan, Pengyue Zhu, Jianwei Yang, Zhengyuan Yang, Lijuan Wang, Andrey
+Kolobov,JianfengGao,andBoqingGong. Site: towardsspatialintelligencethoroughevaluation.
+arXiv preprint arXiv:2505.05456, 2025d.
+WenshanWang,DelongZhu,XiangweiWang,YaoyuHu,YuhengQiu,ChenWang,YafeiHu,Ashish
+Kapoor, and Sebastian Scherer. Tartanair: A dataset to push the limits of visual slam. In2020
+IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS), pp. 4909–4916.
+IEEE, 2020.
+12
+
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701Under review as a conference paper at ICLR 2026
+Yifan Wang, Jianjun Zhou, Haoyi Zhu, Wenzheng Chang, Yang Zhou, Zizun Li, Junyi Chen,
+Jiangmiao Pang, Chunhua Shen, and Tong He.\𝜋3: Scalable permutation-equivariant visual
+geometry learning.arXiv preprint arXiv:2507.13347, 2025e.
+ZehanWang,ZiangZhang,TianyuPang,ChaoDu,HengshuangZhao,andZhouZhao. Orientany-
+thing: Learningrobustobjectorientationestimationfromrendering3dmodels.arXiv:2412.18605,
+2024b.
+Yuanbo Xiangli, Ruojin Cai, Hanyu Chen, Jeffrey Byrne, and Noah Snavely. Doppelgangers++:
+Improved visual disambiguation with geometric 3d features. InProceedings of the Computer
+Vision and Pattern Recognition Conference, pp. 27166–27175, 2025.
+YuxiXiao,QianqianWang,ShangzhanZhang,NanXue,SidaPeng,YujunShen,andXiaoweiZhou.
+Spatialtracker: Tracking any 2d pixels in 3d space. InProceedings of the IEEE/CVF Conference
+on Computer Vision and Pattern Recognition, pp. 20406–20417, 2024.
+YuxiXiao,JianyuanWang,NanXue,NikitaKaraev,YuriMakarov,BingyiKang,XingZhu,Hujun
+Bao, Yujun Shen, and Xiaowei Zhou. Spatialtrackerv2: 3d point tracking made easy.arXiv
+preprint arXiv:2507.12462, 2025.
+Runsen Xu, Xiaolong Wang, Tai Wang, Yilun Chen, Jiangmiao Pang, and Dahua Lin. Pointllm:
+Empowering large language models to understand point clouds. InEuropean Conference on
+Computer Vision, pp. 131–147. Springer, 2024.
+Runsen Xu, Weiyao Wang, Hao Tang, Xingyu Chen, Xiaodong Wang, Fu-Jen Chu, Dahua Lin,
+Matt Feiszli, and Kevin J Liang. Multi-spatialmllm: Multi-frame spatial understanding with
+multi-modal large language models.arXiv preprint arXiv:2505.17015, 2025.
+Jihan Yang, Shusheng Yang, Anjali W Gupta, Rilyn Han, Li Fei-Fei, and Saining Xie. Thinking in
+space: Howmultimodallargelanguagemodelssee,remember,andrecallspaces. InProceedings
+of the Computer Vision and Pattern Recognition Conference, pp. 10632–10643, 2025a.
+Lihe Yang, Bingyi Kang, Zilong Huang, Xiaogang Xu, Jiashi Feng, and Hengshuang Zhao. Depth
+anything: Unleashing the power of large-scale unlabeled data. InProceedings of the IEEE/CVF
+conference on computer vision and pattern recognition, pp. 10371–10381, 2024.
+Rui Yang, Hanyang Chen, Junyu Zhang, Mark Zhao, Cheng Qian, Kangrui Wang, Qineng Wang,
+Teja Venkat Koripella, Marziyeh Movahedi, Manling Li, et al. Embodiedbench: Comprehensive
+benchmarking multi-modal large language models for vision-driven embodied agents.arXiv
+preprint arXiv:2502.09560, 2025b.
+Sihan Yang, Runsen Xu, Yiman Xie, Sizhe Yang, Mo Li, Jingli Lin, Chenming Zhu, Xiaochen
+Chen, Haodong Duan, Xiangyu Yue, et al. Mmsi-bench: A benchmark for multi-image spatial
+intelligence.arXiv preprint arXiv:2505.23764, 2025c.
+Baiqiao Yin, Qineng Wang, Pingyue Zhang, Jianshu Zhang, Kangrui Wang, Zihan Wang, Jieyu
+Zhang, Keshigeyan Chandrasegaran, Han Liu, Ranjay Krishna, et al. Spatial mental modeling
+from limited views.arXiv preprint arXiv:2506.21458, 2025.
+Chenming Zhu, Tai Wang, Wenwei Zhang, Jiangmiao Pang, and Xihui Liu. Llava-3d: A simple
+yeteffectivepathwaytoempoweringlmmswith3d-awareness.arXivpreprintarXiv:2409.18125,
+2024.
+13
+
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755Under review as a conference paper at ICLR 2026
+Appendix
+Contents
+1 Introduction 2
+2 Related Work 3
+3 SpatialTree: Our Framework for Spatial Intelligence 3
+3.1Agentic Competence. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 3
+3.2Mental Simulation. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+3.3Mental Mapping. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 5
+3.4Perception. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+4 Spatial Engine: Our Data Annotator Pipeline 6
+5 Experiments 7
+5.1 Models and Metrics . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 7
+5.2 Performance on SpatialTree-Bench . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+5.3 Analysis of Ability Dependencies . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+5.4 Atomic Prompting for Hierarchical Scaffolding . . . . . . . . . . . . . . . . . . . 9
+6 Conclusion and Discussion 9
+A Visualization of Data Sources 15
+B Evaluation Metrics Details 15
+C SpatialPlus: Complementary Data Annotations for SpatialTree 16
+C.1 Orientations (L1) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+C.2 Agentic Competence (L4) . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+C.3 Goal-driven Navigation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+D Embodied Agent Evaluation within Simulation 19
+E Benchmark Metric Aggregation 19
+F LLM Usage Declarations 20
+14
+
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809Under review as a conference paper at ICLR 2026
+Figure A:Construction of SpatialTree-Bench.We build our benchmark by reorganizing various
+existing datasets and mapping them to our capability tree, whereSpatialPlus, a complementary
+dataset are introduced to ensure the capability coverage.
+A Visualization of Data Sources
+How different datasets contribute to our SpatialTree evaluation is shown in Fig. A.
+B Evaluation Metrics Details
+Multi-Option QAs.Formulti-optionquestionanswering,eachmodelisevaluatedonitsabilityto
+select the correct option from a predefined set. We measure accuracy by comparing the predicted
+choice against the ground-truth answer. This paradigm captures a model’s understanding of spatial
+relations, object properties, and causal dynamics within a scene, corresponding to the low- and
+mid-level capabilities in the SpatialTree (L1–L3).
+Numeric QAs.Numeric QAs require models to predict continuous quantities such as distances,
+angles, or 3D coordinates. We evaluate performance using relative error metrics, for example:
+Relative Error=|ˆ𝑦−𝑦|
+|𝑦|,
+whereˆ𝑦is the predicted value and𝑦is the ground truth. This metric ensures that predictions are
+scaled appropriately across different magnitudes and emphasizes precision in spatial reasoning.
+GPT Judge.For tasks that are open-ended or involve complex reasoning (e.g., trajectory descrip-
+tion, action sequence explanation), we leverage a GPT-based judge to assess correctness. The judge
+evaluates whether the generated response satisfies the task requirements, optionally scoring par-
+tial correctness. This approach allows flexible evaluation beyond rigid numeric or multiple-choice
+formats, especially for mid- and high-level capabilities in L3–L4.
+15
+
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863Under review as a conference paper at ICLR 2026
+FigureB:Orientation Annotations.TheleftsideisthegravityfieldestimatedfromGeoCalibVeicht
+et al. (2024), while the right side is from OrientAnything.
+Agentic Evaluation.To assess agentic competence, models are deployed in interactive simulated
+environments,suchasthoseprovidedbyEmbodiedBench(Yangetal.,2025b). Weevaluatenaviga-
+tion and manipulation tasks along multiple dimensions: success rate in completing the target goal,
+relative translation accuracy, and directional alignment. For each action step, a combined metric is
+computedusingrelativedistanceandcosinesimilarityofmovementvectors,producinganormalized
+score in[0,1]. Aggregating scores over all steps yields a comprehensive measure of an agent’s
+ability to plan and execute actions in long-horizon, embodied tasks.
+C SpatialPlus: Complementary Data Annotations for SpatialTree
+C.1 Orientations (L1)
+The Orientation capability, a fundamental yet under-explored area, involves estimating both gravity
+direction and 3D object orientation. To generate annotations, we leveraged Geocalib Veicht et al.
+(2024) for gravity vector estimation and OrientAnything Wang et al. (2024b) for object poses. We
+applied these tools to datasets suited for each task: for gravity, we annotated 500 images sampled
+from the diverse, drone-captured TartanAir Wang et al. (2020) dataset; for object orientation, we
+utilizedtheobject-centricCo3dv2Reizensteinetal.(2021)dataset(SeeninFig.B).Forgravity,the
+goalistoestimatethecamera’sorientationrelativetothegravityvector,typicallyrepresentedbythe
+pitchandrollangles. Formally, let the gravity vector in the world frame be:
+g𝑤="0
+0
+−1#
+,(3)
+and letR 𝑐𝑤∈𝑆𝑂(3)denote the rotation from the world frame to the camera frame. The gravity
+direction in the camera frame is then:
+g𝑐=R 𝑐𝑤g𝑤.(4)
+Fromg 𝑐=[𝑔 𝑥,𝑔𝑦,𝑔𝑧]⊤, the pitch and roll angles can be computed as:
+pitch=arctan 2(−𝑔 𝑥,√︃
+𝑔2𝑦+𝑔2𝑧),(5)
+roll=arctan 2(𝑔 𝑦,𝑔𝑧).(6)
+Here,pitchmeasurestheforward–backwardtiltofthecamera,whilerollmeasuresthesidewaystilt.
+To evaluate an MLLM’s proficiency in this task, we require the model to analyze the input image
+and return these same three parameters in a structured JSON format. An example of our prompt
+template is shown in Listing 1.
+16
+
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902
+903
+904
+905
+906
+907
+908
+909
+910
+911
+912
+913
+914
+915
+916
+917Under review as a conference paper at ICLR 2026
+1{
+2 "role": "system",
+3 "content": "You are a vision model specialized in estimating camera
+orientation from images.↩→
+4Your task is to infer the gravity direction from the input image by
+predicting the↩→
+5camera's pitch and roll angles, as well as the vertical field of view
+(vFOV).↩→
+6Always output your prediction strictly in the following JSON format:
+7{
+8 \"pitch\": <float, camera pitch angle in degrees>,
+9 \"roll\": <float, camera roll angle in degrees>,
+10 \"vfov\": <float, vertical field of view in degrees>
+11}
+12Do not include any additional text or explanation outside of the JSON
+object."↩→
+13}
+Listing 1:Prompt templatefor Orientation Estimation.
+For evaluation, we move beyond a simple absolute error metric and adopt a probabilistic approach
+thataccountsfortheinherentuncertaintyoftheground-truthannotationsprovidedbyGeocalib. For
+eachpredictedparameter(pitch,roll,andvFOV),Geocalibalsooutputsanuncertaintyvalue,which
+we interpret as the standard deviation (𝜎 𝑔𝑡). We then calculate a normalized similarity score (𝑆) for
+each parameter using a Gaussian kernel, defined as:
+𝑆(𝑦pred,𝑦gt,𝜎gt)=exp 
+−(𝑦pred−𝑦gt)2
+2𝜎2
+gt!
+(7)
+where𝑦 predis the MLLM’s prediction,𝑦 gtis the ground-truth value fromGeocalib, and𝜎 gtis its
+associateduncertainty. Thisscoringfunctiongracefullypenalizesdeviationsfromthegroundtruth:
+the score is 1 for a perfect match and decays towards 0 as the error increases. Crucially, a larger
+uncertainty𝜎 gtinthegroundtruthleadstoaslowerdecay,makingthescoringmorelenientwhenthe
+ground truth itself is less certain. The final score for the task is the average of the individual scores
+for pitch, roll, and vFOV. For object orientation estimation, most of metrics are similar to gravity,
+and the evaluation are conducted on Azimuth, Polar and Rotation these three angles.
+C.2 Agentic Competence (L4)
+C.3 Goal-driven Navigation
+(a)
+ (b)
+Figure C:Navigation Data Curation.(a) shows paired images used for evaluation, where MLLMs
+are expected to move from left to right. (b) illustrates our curation process: reconstructing metric
+3D models and camera trajectories, then converting them into actions.
+17
+
+918
+919
+920
+921
+922
+923
+924
+925
+926
+927
+928
+929
+930
+931
+932
+933
+934
+935
+936
+937
+938
+939
+940
+941
+942
+943
+944
+945
+946
+947
+948
+949
+950
+951
+952
+953
+954
+955
+956
+957
+958
+959
+960
+961
+962
+963
+964
+965
+966
+967
+968
+969
+970
+971Under review as a conference paper at ICLR 2026
+Goal-driven Navigation.We leverage our SpatialEngine to get the action annotations as shown
+in Fig. C. We first extract the metric pose trajectories from the games videos, and convert them
+into discrete actions with our spatial action mapping, and then we randomly sample several image
+pairs from the video with the correspondence checking. For evaluation, the goal is a image, and the
+MLLMs are supposed to control the character to move to the target positions. We use the prompt
+template as below:
+{
+"role": "system",
+"content": "Task Details:\n
+Analyze Images: Compare the start image <Image 1> and the target image <Image
+2> to understand the required translation and rotation for the robot
+arm's end-effector.\n↩→
+↩→
+Define Motion: Decompose the movement into 6 steps, each containing one or
+more elementary actions.\n↩→
+Quantify Actions: For each action, specify an integer step_num that
+represents its intensity.\n\n↩→
+Coordinate System:\n
+Right-hand frame attached to the end-effector: +Z forward, +X right, +Y
+downward.\n\n↩→
+Action Space:\n
+Translation: Dolly In (W), Dolly Out (S), Truck Left (A), Truck Right (D),
+Pedestal Up (space), Pedestal Down (shift).\n ↩→
+Rotation: Pan Left (←), Pan Right (→), Tilt Up (↑), Tilt Down (↓), Roll CW
+(R⃝), Roll CCW ( L⃝).\n↩→
+Special Action: Stay (STOP).\n\n
+Step Size:\n
+Translation: 0.019375 m/step. Rotation: 0.4509 rad/step.\n\n
+Output Format:\n
+Return a single JSON object with keys step_1–step_6. Each step contains:\n
+actions: list of action symbols\n
+step_nums: corresponding integers.\n\n
+Example:\n
+{
+\"step_1\": {
+\"actions\": [\"W\", \"A\"],
+\"step_nums\": [5, 2]
+},
+\"step_2\": {
+\"actions\": [\"W\", \"↑\"],
+\"step_nums\": [3, 4]
+}
+}"
+}
+Listing 2:Prompt of navigation.
+Inthisprompt,translationandrotationstepsarecomputedfromtheactualmovement,whilecapping
+thenumberofstepsat10topreventoverlylongactionsequences. ToevaluateMLLMs,wecompute
+a normalized metric in the range[0,1]by combiningrelative distanceanddirectional accuracy.
+Specifically, for each step, letΔp predandΔp gtdenote the predicted and ground-truth translation
+vectors, respectively.
+18
+
+972
+973
+974
+975
+976
+977
+978
+979
+980
+981
+982
+983
+984
+985
+986
+987
+988
+989
+990
+991
+992
+993
+994
+995
+996
+997
+998
+999
+1000
+1001
+1002
+1003
+1004
+1005
+1006
+1007
+1008
+1009
+1010
+1011
+1012
+1013
+1014
+1015
+1016
+1017
+1018
+1019
+1020
+1021
+1022
+1023
+1024
+1025Under review as a conference paper at ICLR 2026
+Therelative distance scoreis defined as:
+𝑠𝑑=max
+0,1−∥Δppred−Δpgt∥
+∥Δpgt∥
+,
+and thedirectional scoreis computed by the cosine similarity:
+𝑠𝜃=Δppred·Δpgt
+∥Δppred∥∥Δpgt∥.
+The final step-wise accuracy is then:𝑠 step=𝑠𝑑·max(0,𝑠 𝜃)
+which ensures a value in[0,1], where 1 indicates perfect alignment in both distance and direction.
+Aggregating𝑠 stepacross all steps provides a comprehensive measure of the model’s precision in
+executing end-effector motions.
+Goal-driven ManipulationFor theGoal-Driven Manipulationcapability, we utilize action an-
+notations from theDroidKhazatsky et al. (2024) andEgoDexHoque et al. (2025) datasets. This
+task requires the MLLM to generate a sequence of precise actions to move a robot end-effector or
+a human hand from a starting state to a target state, both specified by images. The action space for
+Droidencompasses7-DoFcontrol: 6-DoFfortheend-effector’spose(translationandrotation)and
+abinarystateforthegripper(open/close). AsimilaractionspaceisadaptedforEgoDex,controlling
+wrist pose and finger grip. The MLLM is prompted to generate a sequence of continuous action
+vectors, as shown in the template below:
+ToevaluatetheMLLM’sperformance,weassesstheaccuracyofthepredictedactionsequenceagainst
+the ground truth. For the translational component of the motion, we reuse the step-wise accuracy
+metric𝑠 stepfrom the navigation task, which combines relative distance and directional scores. For
+the rotational component, we compute a normalized score based on the angular difference between
+the predicted orientation and the ground truth. Let𝑅 predand𝑅gtbe the predicted and ground-truth
+rotationmatricesforastep. Therotationalerrorangle𝜃 erriscalculatedfromtheerrorrotationmatrix
+𝑅err=𝑅pred𝑅𝑇
+gt:
+𝜃err=arccosTr(𝑅err)−1
+2
+.
+Therotation score𝑠 rotis then defined as:
+𝑠rot=max
+0,1−𝜃err
+𝜋
+,
+which normalizes the error to a[0,1]range, where 1 indicates a perfect rotational match. Finally,
+thegripper score𝑠 gripperis a binary accuracy (1 if the predicted state matches the ground truth, 0
+otherwise). Thefinalscoreforeachstepisaweightedcombinationofthesethreemetrics,providing
+a holistic evaluation of the model’s ability to perform precise, multi-faceted manipulation tasks.
+D Embodied Agent Evaluation within Simulation
+EmbodiedBench(Yangetal.,2025b)providesaclosed-loopevaluationframeworkinwhichMLLMs
+are deployed within interactive simulators. It includes four primary environments—EB-ALFRED,
+EB-Habitat,EB-Navigation,andEB-Manipulation—supportinglong-horizontasksthatrequireboth
+high-levelplanningandlow-levelcontrol. Followingthebenchmark’sevaluationprotocol,weassess
+our models’ navigation and manipulation capabilities in these simulated settings.
+E Benchmark Metric Aggregation
+To derive a single, comprehensive score for a model’s spatial intelligence, we employ a hierarchical
+aggregation methodology. This approach is designed to reflect the complex, multi-layered nature
+of spatial cognition, rather than treating all abilities as equally important. The design is principally
+guided by established theories in cognitive psychology, which posit that spatial intelligence is
+constructedhierarchically,withfundamentalperceptualskillsformingthebedrockformoreabstract
+reasoning and planning.
+19
+
+1026
+1027
+1028
+1029
+1030
+1031
+1032
+1033
+1034
+1035
+1036
+1037
+1038
+1039
+1040
+1041
+1042
+1043
+1044
+1045
+1046
+1047
+1048
+1049
+1050
+1051
+1052
+1053
+1054
+1055
+1056
+1057
+1058
+1059
+1060
+1061
+1062
+1063
+1064
+1065
+1066
+1067
+1068
+1069
+1070
+1071
+1072
+1073
+1074
+1075
+1076
+1077
+1078
+1079Under review as a conference paper at ICLR 2026
+Root
+(Weight: 1.0)
+L1
+(Weight: 0.3)L2
+(Weight: 0.3)L3
+(Weight: 0.2)L4
+(Weight: 0.2)
+Geometry
+(Weight: 0.3)Motion
+(Weight: 0.1)Relation
+(Weight: 0.1)Localization
+(Weight: 0.3)Orientation
+(Weight: 0.2)Understanding
+(Weight: 0.5)Memory
+(Weight: 0.5)Causal Reasoning
+(Weight: 0.5)Sequential Planning
+(Weight: 0.5)Goal Execution
+(Weight: 0.5)Open Exploration
+(Weight: 0.5)
+Figure D: An illustration of the hierarchical weighting scheme for metric aggregation with in the
+SpatialTree. Eachnoderepresentsacapabilitylayer,withtheassignedweightusedforthebottom-up
+calculationofthefinalscore. Theweightingprioritizesfoundationalperceptualabilities(L1)asthey
+are prerequisites for higher-level cognitive tasks.
+OuraggregationframeworkisbuiltupontheSpatialTreestructure. Theassignmentofweightswithin
+this tree is determined by a synthesis of theoretical principles and empirical, data-driven insights:
+Cognitive Hierarchy.In line with cognitive science literature, our weighting scheme prioritizes
+foundational capabilities, as shown in Fig. D. The L1 layer, which represents low-level spatial
+perception, is assigned the largest weight, as these skills are prerequisites for almost all higher-level
+spatial tasks found in L2 (Mental Mapping) and L3 (Mental Simulation).
+Empirical Dependency from Correlation Analysis.The theoretical hierarchy is further refined
+andvalidatedbyourempiricalfindingsfromthePearsoncorrelationheatmap(Fig.??). Theheatmap
+allows us to identifyatomic abilitiesthat exhibit strong, widespread correlations with a multitude
+of other skills. These influential abilities are considered more fundamental to the overall spatial
+intelligencenetworkandareconsequentlyassignedhigherweightswithintheirrespectivesub-trees.
+This ensures our metric is not just theoretically sound, but also reflects the actual dependencies
+observed in model performance.
+The final score is calculated via a bottom-up, weighted summation. The performance score for any
+parent node in the tree is the weighted sum of the scores of its immediate children. This process is
+recursivelyapplieduntiltherootnodeisreached,yieldingasingle,principledscorethatholistically
+quantifies the spatial intelligence of a given MLLM.
+F LLM Usage Declarations
+We declare that Large Language Models (LLMs) were used in a limited capacity during the prepa-
+ration of this manuscript. Specifically, LLMs were employed for grammar checking, word choice
+refinement,andtypocorrection. Allcoretechnicalcontributions,experimentaldesign,analysis,and
+conclusions are entirely our own. The use of LLMs did not influence the scientific methodology,
+result interpretation, or theoretical contributions of this research.
+20
+
+1080
+1081
+1082
+1083
+1084
+1085
+1086
+1087
+1088
+1089
+1090
+1091
+1092
+1093
+1094
+1095
+1096
+1097
+1098
+1099
+1100
+1101
+1102
+1103
+1104
+1105
+1106
+1107
+1108
+1109
+1110
+1111
+1112
+1113
+1114
+1115
+1116
+1117
+1118
+1119
+1120
+1121
+1122
+1123
+1124
+1125
+1126
+1127
+1128
+1129
+1130
+1131
+1132
+1133Under review as a conference paper at ICLR 2026
+{
+"role": "system",
+"content": "Task Details:\n
+Compare the start image <Image 1> and target image <Image 2> to infer the
+translation and rotation required for the robot arm's end-effector.\n ↩→
+Decompose the motion into up to 6 steps, each combining any number of
+elementary actions.\n\n↩→
+Action Space:\n
+We define a 7D action vector per step:\n
+[dx, dy, dz, d_roll, d_pitch, d_yaw, gripper_state]\n
+- Translation (dx, dy, dz): Displacement in meters along +X, +Y, +Z.\n
+- Rotation (d_roll, d_pitch, d_yaw): Rotation in radians about +Z, +X, +Y
+respectively.\n↩→
+- gripper_state: 0=open, 1=closed.\n\n
+Each dx, dy, dz, d_roll, d_pitch, d_yaw is computed from selected actions and
+their step_nums:\n↩→
+Δq = step_num×unit_step_size (translation in meters or rotation in
+radians)\n\n↩→
+Available Actions:\n
+W/S: Dolly In/Out (+/-Z)\n
+A/D: Truck Left/Right (-/+X)\n
+space/shift: Pedestal Up/Down (-/+Y)\n
+←/→: Pan Left/Right (±yaw)\n
+↑/↓: Tilt Up/Down (±pitch)\n
+R⃝/L⃝: Roll CW/CCW (±roll)\n
+STOP: No movement\n\n
+Output Format:\n
+Return a single JSON object where each step is a key (\"step_1\", \"step_2\",
+...).\n↩→
+Each step contains:\n
+- actions: a list of action symbols\n
+- step_nums: a list of integers specifying intensity (1–10)\n
+- gripper: 0 or 1 for gripper state\n\n
+Example:\n
+{
+\"step_1\": {
+\"actions\": [\"W\", \"A\"],
+\"step_nums\": [5, 2],
+\"gripper\": 0
+},
+\"step_2\": {
+\"actions\": [\" R⃝\"],
+\"step_nums\": [3],
+\"gripper\": 1
+}
+}"
+}
+Listing 3:Prompt for Goal-Driven Manipulation with 7D Action Representation.
+21
+
