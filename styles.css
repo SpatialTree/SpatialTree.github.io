@@ -9,10 +9,12 @@
   --accent-muted: rgba(54, 85, 255, 0.08);
   --card-shadow: 0 1.125rem 2.8125rem rgba(20, 30, 60, 0.12);
   --max-width: 60rem;
-  font-size: clamp(5.333px, 1.667vw, 16px);
+  font-size: clamp(5.333px, calc(100vw / 60), 16px);
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont,
     "Segoe UI", sans-serif;
   line-height: 1.6;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 *,
@@ -162,60 +164,6 @@ main {
   background: #000;
 }
 
-@media (max-width: 720px) {
-  .hero {
-    width: calc(100% - 1.5rem);
-    padding: 3.5rem 0 2.5rem;
-  }
-
-  .eyebrow {
-    letter-spacing: 0.16em;
-    font-size: 0.65rem;
-  }
-
-  .hero-text {
-    gap: 0.5rem;
-  }
-
-  .hero h1 {
-    font-size: clamp(1.5rem, 6vw, 1.9rem);
-    line-height: 1.24;
-  }
-
-  .authors-line {
-    font-size: 0.9rem;
-  }
-
-  .affiliations {
-    font-size: 0.85rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .cta-group {
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .resource-btn {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.8rem;
-    flex: 1 1 calc(50% - 0.5rem);
-    justify-content: center;
-  }
-
-  .resource-btn .btn-icon {
-    width: 0.875rem;
-    height: 0.875rem;
-  }
-
-  .hero-figure {
-    margin-top: 0.75rem;
-  }
-
-  .figure-frame video {
-    max-height: 20rem;
-  }
-}
 
 .hero-figure figcaption {
   margin-top: 0.625rem;
@@ -543,21 +491,6 @@ table tr:last-child td {
   border-top: 0.0625rem solid var(--border);
 }
 
-@media (max-width: 640px) {
-  .site-header nav {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-
-  .hero-meta {
-    padding: 0.75rem;
-  }
-
-  table th,
-  table td {
-    padding: 0.625rem 0.75rem;
-  }
-}
 .authors p {
   margin: 0 0 0.5rem;
   color: var(--muted);
