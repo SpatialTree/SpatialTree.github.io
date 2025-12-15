@@ -86,14 +86,14 @@ main {
   font-size: 0.7rem;
   color: var(--muted);
   margin-bottom: 10px;
-  word-break: break-word;
+  word-break: normal;
 }
 
 .hero h1 {
   font-size: clamp(1.7rem, 2.6vw, 2.2rem);
   line-height: 1.25;
   margin: 10px 0 12px;
-  word-break: break-word;
+  word-break: normal;
   hyphens: auto;
 }
 
@@ -161,25 +161,7 @@ main {
   background: #000;
 }
 
-@media (max-width: 900px) {
-  .hero-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .hero {
-    padding-top: 52px;
-  }
-
-  .hero-figure {
-    margin-top: 12px;
-  }
-
-  .cta-group {
-    flex-wrap: wrap;
-  }
-}
-
-@media (max-width: 640px) {
+@media (max-width: 720px) {
   .hero {
     width: calc(100% - 24px);
     padding: 56px 0 40px;
@@ -195,7 +177,7 @@ main {
   }
 
   .hero h1 {
-    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
     line-height: 1.24;
   }
 
@@ -210,6 +192,7 @@ main {
 
   .cta-group {
     gap: 8px;
+    flex-wrap: wrap;
   }
 
   .resource-btn {
@@ -223,6 +206,14 @@ main {
     width: 14px;
     height: 14px;
   }
+
+  .hero-figure {
+    margin-top: 12px;
+  }
+
+  .figure-frame video {
+    max-height: 320px;
+  }
 }
 
 .hero-figure figcaption {
@@ -234,10 +225,9 @@ main {
 .cta-group {
   display: flex;
   gap: 10px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   margin-top: 18px;
   justify-content: flex-start;
-  overflow-x: auto;
 }
 
 .resource-btn {
@@ -255,6 +245,7 @@ main {
   text-decoration: none;
   transition: all 0.2s ease;
   box-shadow: 0 2px 4px rgba(54, 85, 255, 0.08);
+  flex: 0 1 auto;
 }
 
 .resource-btn:hover {
