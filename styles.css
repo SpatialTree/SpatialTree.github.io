@@ -86,12 +86,15 @@ main {
   font-size: 0.7rem;
   color: var(--muted);
   margin-bottom: 10px;
+  word-break: break-word;
 }
 
 .hero h1 {
   font-size: clamp(1.7rem, 2.6vw, 2.2rem);
   line-height: 1.25;
   margin: 10px 0 12px;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .authors-line {
@@ -182,13 +185,18 @@ main {
     padding: 56px 0 40px;
   }
 
+  .eyebrow {
+    letter-spacing: 0.16em;
+    font-size: 0.65rem;
+  }
+
   .hero-text {
     gap: 8px;
   }
 
   .hero h1 {
-    font-size: clamp(1.5rem, 6vw, 1.9rem);
-    line-height: 1.25;
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    line-height: 1.24;
   }
 
   .authors-line {
