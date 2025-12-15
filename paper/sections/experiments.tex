@@ -1,0 +1,136 @@
+\section{Evaluation on SpatialTree-Bench}
+\label{sec:evaluation_benchmark}
+
+\subsection{Models and Metrics}
+\label{sec:models_and_metrics}
+\textbf{Benchmarked Models.}
+We categorize the evaluated MLLMs into three groups:
+(1) Thinking Models, i.e., models augmented with explicit reasoning or chain-of-thought generation mechanisms (reasoning-augmented), including Gemini 2.5 Flash, Gemini 2.5 Pro~\citep{comanici2025gemini}, GLM-4.5V~\citep{hong2025glm}, and SeedVL1.6-Vision~\citep{guo2025seed1};
+(2) Non-Thinking Models, which do not explicitly optimize for reasoning-style generation, such as Gemini 2.5-Pro-Nonthink, Gemini 2.5-Flash-Nonthinking, and GPT-4o~\citep{hurst2024gpt}; and
+(3) Open-Source Models, including Qwen2.5-VL~\citep{bai2025qwen2}, Qwen3-VL~\citep{yang2025qwen3}, and Kimi-VL~\citep{team2025kimi}, representing recent community-driven multimodal advances. This diverse selection enables comprehensive comparisons across reasoning and non-reasoning paradigms, proprietary and open-source ecosystems, and model scales ranging from 32B to 72B parameters—providing a holistic overview of the current MLLM landscape. A full list of evaluated models is shown in Tab.~\ref{tab:main_table}.
+
+\textbf{Evaluation Metrics.}
+Our evaluation employs a multi-faceted set of metrics tailored to the specific abilities at each level of the SpatialTree. For perception and understanding tasks (L1-L2), we primarily use accuracy-based metrics, such as classification accuracy for object recognition, Mean Squared Error (MSE) for distance estimation, and angular difference for orientation tasks. For higher-level reasoning and planning tasks (L3-L4), we measure task success rates. In the case of agentic tasks (L4), we further analyze the quality of generated actions using metrics like positional error (L2 distance) and orientation error (angular difference) against ground-truth trajectories.
+\subsection{Overall Performance}
+\label{sec:spatialtree_bench}
+\input{tables/1_table}
+
+We first present the overall performance of all benchmarked models on our proposed SpatialTree-Bench, with detailed results summarized in Tab.~\ref{tab:main_table}. In our benchmark, the reasoning models achieve clear improvement over their non-thinking versions, e.g., Gemini2.5-Pro (53.9) vs. Gemini2.5-Pro-NT (51.4). 
+
+\section{Exploring Ability Dependencies and Hierarchical Transfer}
+\label{sec:ability_influence}
+
+\subsection{Analysis of Ability Dependencies}
+\label{sec:ability_dependencies}
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=0.45\textwidth]{figures/pearson_heatmap.pdf}
+    \caption{\textbf{Inter-Capability Dependencies via Pearson Correlation.} 
+    (A) Correlation matrix among higher-level capabilities (L3 and L4); 
+    (B) Correlation matrix among foundational L1 capabilities; 
+    (C) Salient low-level abilities influencing higher-level tasks.}
+    \label{fig:wrap_example}
+\end{figure}
+
+To investigate the structure of spatial intelligence in MLLMs, we analyze dependencies among fine-grained sub-abilities using Pearson correlation coefficients computed from our benchmark scores. A high positive correlation indicates that strong performance on one ability tends to accompany strong performance on another. Fig.~\ref{fig:wrap_example} presents a heatmap of these correlations across all models. Notably, higher-level capabilities (L3 and L4) exhibit stronger correlations (region A), suggesting that complex tasks such as route planning and causal reasoning rely on overlapping foundational sub-skills. In contrast, lower-level abilities (L1) show weak correlations, indicating they are largely independent. Based on this coarse correlation analysis, we select several underutilized low-level abilities for further investigation. These abilities are explored through Supervised Fine-Tuning (SFT) and explicit prompting to examine their influence and transfer, both within the same level and across higher levels.
+
+% Finally, we identify a set of low-level critical abilities that act as prerequisites for a wide range of higher-level competencies. For example, strong performance in geometric perception tasks, particularly distance estimation (\textit{L1-Geo.Dist}) and size estimation (\textit{L1-Geo.Size}), shows a strong positive correlation with many advanced abilities, including open exploration (\textit{L4-Open.Expl.}), and causal reasoning (\textit{L3-Seq.Plan.Ope, L3-Caus.Reas.Rel}). This indicates that a model's ability to perceive fundamental geometric properties is a cornerstone upon which more abstract spatial reasoning is constructed. These findings strongly support our hypothesis that a core set of atomic abilities forms the basis for the emergence of broader spatial intelligence in MLLM.
+
+\subsection{Probing Cross-Ability Transfer via SFT}
+\label{sec:sft_exp}
+\input{tables/2_table}
+
+
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=0.98\linewidth]{figures/ability_transfer.pdf}
+\vspace{-1em}
+\caption{\textbf{Demonstration of Capability Transfer after Distance SFT.} 
+\textbf{(Top)} The model is trained on distance QAs, such as object depth sorting and comparison, just using data from synthetic and indoor scenes. 
+\textbf{(Middle)} This learned capability transfers in a zero-shot manner to complex reasoning tasks in unseen, in-the-wild scenes, achieving a \textbf{36.0\%} performance gain over the baseline. 
+\textbf{(Bottom)} Furthermore, the skill exhibits cross-level transfer, enabling the model to perform a robotic arm manipulation task with a \textbf{27.1\%} performance gain.}
+\vspace{-1.5em}
+\label{fig:ability_transfer}
+\end{figure*}
+
+\begin{tcolorbox}[
+    colback=seedblue!5,
+    colframe=seedblue!80,
+    boxrule=0.5pt,
+    arc=2pt,
+    left=6pt,
+    right=6pt,
+    top=6pt,
+    bottom=6pt,
+    fonttitle=\bfseries,
+    title=\textbf{Finding 1}
+]
+\textbf{Cross-Ability Transfer:} Single-ability L1 SFT induces cross-level transfer, while yielding limited or slightly negative effects on same-level abilities.
+\end{tcolorbox}
+
+Based on a naive Pearson correlation analysis, we manually select three L1 abilities that exhibit the strongest correlations with higher-level performance: Geometry Distance (\textit{L1-Geo.Dist}), Geometry Size (\textit{L1-Geo.Size}), and Relative Correlation (\textit{L1-Relat.Corr}). 
+
+\noindent\textbf{General Data Mixture.} To construct the general visual-instruction data, we follow the VST~\cite{vst_yang2025} data mixing recipe and combine multimodal datasets from LLaVA-Video~\citep{zhang2024llavanext-video}, LLaVA-NeXT-Interleave~\citep{li2024llava_next_interleave}, and LLaVA-OneVision~\citep{li2024llava_onevision}, covering single-image, multi-image, video, and 3D tasks. We then use SpatialEngine to generate ability-specific instruction data, mixed with the general data in a 1:3 ratio specifically for each. To isolate the gains from general data, we use a baseline fine-tuned only on the general data with the same token consumption. 
+
+\noindent\textbf{Targeted SFT Data.} For \textit{L1-Geo.Dist}, we generate approximately 0.25M distance-relevant QA samples from SUNRGBD~\citep{song2015sun}, Hypersim~\citep{Hypersim}, and Matterport3D~\citep{Matterport3D}. The training data is further augmented with visual prompts and multi-scale transformations to enhance distance reasoning. For \textit{L1-Relat.Corr}, we generate matching data following VST~\cite{vst_yang2025}, sampling 0.25M examples. Similarly, for \textit{L1-Geo.Size}, we generate 0.25M samples from 3D bounding-box annotated datasets, including SUNRGBD, Hypersim and ArkitScenes~\citep{baruch2021arkitscenes}. 
+
+\noindent\textbf{Results and Analysis.} As shown in Tab.~\ref{fig:ability_transfer}, single-ability SFT on distance, correspondence, or size generally yields negligible gains or even substantial drops in other abilities at the same level. Specifically, \texttt{B+Dist.} increases \textbf{Geom.} abilities by +3.2, while decreasing \textbf{Motion}, \textbf{Rel.}, and \textbf{Local.} by -2.0, -5.8, and -4.6, respectively. However, it provides non-trivial gains in higher-level abilities, notably \textbf{Underst.} (+2.0) and \textbf{Goal Exec.} (+3.4). To give a further exploration on how this cability transfer happens and why, we provide a qualitative examples in Fig.~\ref{fig:ability_transfer}. After being fine-tuned on distance-QA data, \texttt{B+Dist.} can generalize to much more complex distance-related questions in in-the-wild scenarios, including those with novel coordinate prompts and multiple points queried simultaneously. This indicates that the model has learned an awareness of distance rather than overfitting to specific QA templates. Besides, and more intriguingly, the improved distance ability also shows clear cross-level transfer. It benefits higher-level tasks such as robot-arm manipulation, where MLLMs are required to guide the gripper to move, rotate, and open/close in 3D space. A better sense of metric space helps the model generate more reasonable control decisions in the real world.
+
+\begin{tcolorbox}[
+    colback=seedblue!5,
+    colframe=seedblue!80,
+    boxrule=0.5pt,
+    arc=2pt,
+    left=6pt,
+    right=6pt,
+    top=6pt,
+    bottom=6pt,
+    fonttitle=\bfseries,
+    title=\textbf{Finding 2}
+]
+\textbf{Multi-ability Synergy:} 
+The holistic integration across multiple fundamental abilities achieves synergistic gains far exceeding their individual effects.
+% While L1-Relat.Corr alone yields negligible gains, combining it with L1-Geo.Dist results in substantially larger improvements, exceeding those of L1-Geo.Dist alone.
+\end{tcolorbox}
+Tab.~\ref{tab:sft_exp} reveals an interesting phenomenon: individual SFT on any single ability—Distance, Size, or Correspondence—has limited impact on overall spatial performance, and can even slightly reduce it (e.g., \texttt{B+Dist.} \textbf{-0.5}, \texttt{B+Corr.} \textbf{+0.2}, \texttt{B+Size.} \textbf{-1.5} relative to the baseline). In contrast, combining all three abilities in a blended SFT (\texttt{B+Dist.+Size+Corr.}) yields an overall gain of \textbf{+1.1}, surpassing the performance of any individual ability and even exceeding the sum of their separate contributions. Remarkably, for abilities that suffered substantial drops under single-ability SFT—such as L1.Motion (best individual change \textbf{-2.0})—the compositional training produces a positive improvement of \textbf{+0.7}.
+
+\subsection{Reinforcement Learning}
+\input{tables/3_table}
+\label{sec:RL}
+In the main paper, we demonstrated the efficacy of Supervised Fine-Tuning (SFT) and prompting in activating spatial capabilities. Motivated by recent advancements in reasoning models (e.g., DeepSeek-R1), we further investigate whether Reinforcement Learning with Verifiable Rewards (RLVR) can serve as a catalyst for emerging spatial intelligence.
+
+\noindent\textbf{Methodology.} We employ Group Relative Policy Optimization (GRPO) to train the Qwen2.5-VL-7B model. To construct a rewardable environment, we utilize robotic arm manipulation data (distinct from the evaluation set) and reformat the perception and planning tasks into Multiple-Choice Questions (MCQs). This format allows for deterministic, rule-based verification of the model's outputs (i.e., correct/incorrect selection) to serve as the reward signal during RL training.
+
+\noindent\textbf{Strict Evaluation Setup.} It is important to note two critical factors in our experimental design that ensure the robustness of our findings:
+\begin{itemize}
+    \item Data Decontamination: The robotic arm data samples used for GRPO training are strictly separated from the SpatialTree-Bench testing data. There is no overlap in specific scenes or object configurations between the training and evaluation sets.
+    \item Task and Metric Discrepancy: The training objective is purely maximizing the reward on discrete MCQ selection. In contrast, the SpatialTree-Bench evaluation employs a diverse set of continuous and semantic metrics (e.g., Mean Squared Error for distance, angular error for orientation, and execution success rates for agentic tasks).
+\end{itemize}
+
+\noindent\textbf{Results and Observations.} Despite the significant domain gap and the difference in task formulation, the GRPO-tuned Qwen2.5-VL-7B demonstrates notable improvements across multiple levels of the SpatialTree hierarchy compared to its base counterpart. This suggests that the model is not merely memorizing dataset-specific patterns, but is effectively internalizing generalized spatial reasoning policies through the reinforcement learning process. These preliminary findings highlight the potential of RLVR as a scalable pathway for advancing spatial intelligence in MLLMs.
+
+\subsection{Ability Transfer via Prompting}
+\label{sec:atomic_prompting}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=1\linewidth]{figures/visual_corr_compare.pdf}
+\vspace{-1em}
+\caption{\textbf{Correspondence Prompting for Navigation.} The correspondence prompt guides Gemini2.5-pro to navigate and move  more accurately within 3D environments.}%
+\vspace{-1em}
+\label{fig:prompt}
+\end{figure}
+
+In addition to SFT, we investigate cross-level ability influence through explicit prompting. Specifically, we consider a representative task pair: low-level abilities (L1.Corr, L1.Dist, L1.Size) and a high-level task (L4.Imaged Goal Navigation). Intuitively, correspondence is a necessary component for navigation. Using Gemini2.5-pro, we provide models with explicit prompts derived from matching visualizations, depth, and size context. As shown in Fig.~\ref{fig:prompt}, correspondence guidance improves target direction recognition, increasing accuracy by \textbf{7.1\%}, while distance and size prompting yield gains of \textbf{5.5\%} and \textbf{2.1\%}, respectively. These results suggest that grounding MLLM reasoning with explicit low-level visual information can substantially enhance performance on complex spatial navigation tasks.
+% 
+% Specifically, we compared a baseline condition, where the model generated actions from inital and final states given a defined 6DoF action space, with an experimental condition that augmented the model input with explicit visual correspondence figures. 
+
+
+\vspace{-1em}
+\section{Conclusion and Future works}
+We present SpatialTree, the first capability-centric framework for Spatial Intelligence, organizing abilities into four hierarchical layers. This structure enables analysis of how spatial abilities emerge, compose, and transfer across levels. It also opens opportunities to efficiently scale up spatial intelligence in MLLMs, by strategically leveraging different types of data: identifying which abilities are most effective for pre-training, which can be directly applied in reinforcement learning with minimal additional reasoning data during post-training, and which are acquired through real-world interactions. We believe this could provide a promising path toward advancing spatial intelligence in MLLMs.
+
+
+
+

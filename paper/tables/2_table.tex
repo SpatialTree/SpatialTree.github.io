@@ -1,0 +1,49 @@
+\begin{table*}[ht!]
+    \vspace{-0.4cm}
+    \centering
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{l|c|ccccc|cc|cc|cc}
+    
+    \hline % <--- THIS IS THE NEW "CAP" LINE TO CLOSE THE TOP OF THE TABLE
+    
+    % --- Header Definition with new colors ---
+    \rowcolor{white} 
+     & & 
+    \multicolumn{5}{c|}{\cellcolor{L1_Purple} L1 Perception} &  
+    \multicolumn{2}{c|}{\cellcolor{L2_Orange} L2 Mental Mapping} &
+    \multicolumn{2}{c|}{\cellcolor{L3_Green} L3 Mental Simulation} &
+    \multicolumn{2}{c}{\cellcolor{L4_Blue} L4 Agentic Competence} \\
+    
+    \rowcolor{white} 
+    \textbf{Methods} & \textbf{Avg.} & 
+    \textbf{Geom.} & \textbf{Motion} & \textbf{Rel.} & \textbf{Local.} & \textbf{Orient.} &
+    \textbf{Underst.} & \textbf{Memory} &
+    \textbf{Caus. Reas.} & \textbf{Seq. Plan.} &
+    \textbf{Goal Exec.} & \textbf{Open Expl.} \\
+    % \hline
+
+    % % --- Baselines ---
+    % \rowcolor{navyblue!5}
+    % \multicolumn{15}{l}{\textcolor{black}{\textit{Baseline}}} \\
+    % Chance Level (Random) & - & - & -- & -- & -- & -- & -- & -- & -- & 25.0 & 36.1 & 28.3 & 25.0 & -- \\
+    % Chance Level (Frequency) & - & 34.0 & 62.1 & 32.0 & 29.9 & 33.1 & 25.1 & 47.9 & 28.4 & 25.2 & -- & -- & -- & -- \\
+    \hline
+
+    % --- Proprietary Models ---
+    \rowcolor{navyblue!5}
+    Baseline & 25.0 & 20.9 & 28.6 & 28.9 & 24.2 & 34.2 & 22.6 & 21.7 & 27.2 & 31.7 & 22.1 & 26.5 \\ 
+    B+Dist. & 24.5 & \goodres{24.1}{3.2} & \badres{26.6}{-2.0} & \badres{23.2}{-5.8} & \badres{19.6}{-4.6} & \neutralres{34.3}{0.1} & \goodres{24.6}{2.0} & \neutralres{21.8}{0.1} & \neutralres{26.1}{-1.1} & \neutralres{30.8}{-0.9} & \goodres{25.5}{3.4} & \neutralres{26.1}{-0.4} \\ 
+    B+Corr. & 25.2 & \badres{17.6}{3.2} & \badres{23.9}{-4.7} & \goodres{30.2}{1.3} & \badres{18.9}{-5.3} & \goodres{35.6}{1.4} & \neutralres{21.9}{-0.7} & \goodres{24.6}{2.9} & \badres{21.8}{-5.4} & \goodres{33.9}{2.2} & \goodres{24.7}{2.6} & \goodres{35.9}{9.4} \\ 
+    B+Size & 23.5 & \badres{24.3}{3.4} & \badres{22.6}{-6.0} & \badres{21.4}{-7.5} & \badres{21.7}{-2.5} & \neutralres{34.5}{0.3} & \neutralres{21.9}{-0.8} & \badres{19.2}{-2.5} & \badres{23.4}{-3.8} & \badres{30.3}{-1.5} & \badres{21.5}{-0.6} & \badres{24.3}{2.2} \\ 
+    B+Dist.+Size+Corr. & 26.1 & \goodres{25.5}{4.6} & \neutralres{29.3}{0.7} & \neutralres{29.4}{0.5} & \badres{16.4}{-7.8} & \neutralres{33.7}{0.5} & \goodres{23.0}{0.4} & \goodres{24.2}{2.5} & \badres{25.2}{-2.0} & \goodres{34.2}{2.5} & \goodres{26.0}{3.9} & \goodres{28.5}{2.0} \\ 
+    B+Dist.+Size+Corr.+Mot. & 27.3 & \goodres{28.6}{7.7} & \badres{24.6}{-4.0} & \badres{20.6}{-8.3} & \goodres{26.3}{2.1} & \goodres{36.0}{1.8} & \neutralres{22.2}{-0.4} & \neutralres{22.6}{0.9} & \goodres{28.2}{1.0} & \goodres{32.8}{1.1} & \goodres{23.3}{1.1} & \goodres{35.9}{9.4} \\ 
+    Baseline+50@(all spat.) & 23.6 & \goodres{24.9}{4.0} & \badres{22.6}{-6.0} & \badres{25.9}{-3.0} & \badres{17.4}{-6.8} & \badres{31.2}{-3.0} & \neutralres{22.2}{-0.4} & \badres{20.6}{-1.1} & \badres{25.7}{-1.5} & \badres{30.2}{-1.5} & \badres{19.7}{-2.4} & \badres{22.8}{-3.7} \\ 
+    \hline
+    \end{tabular}
+    } % End of resizebox
+    \vspace{-0.2cm}
+    \caption{\textbf{SFT Comparisons.}
+    "B+Dist.", "B+Corr.", and "B+Size" denote the baseline augmented with distance, correspondence, and size tuning data, respectively. Changes are color-coded as \textcolor{papergreen}{notable gains}, \textcolor{gray}{neutral influence}, and \textcolor{paperred}{drops}.}
+    \label{tab:sft_exp}
+    \vspace{-1.7em}
+\end{table*}

@@ -1,0 +1,43 @@
+\begin{table*}[ht!]
+    \vspace{-0.4cm}
+    \centering
+    \resizebox{\linewidth}{!}{
+    \begin{tabular}{l|c|ccccc|cc|cc|cc}
+    
+    \hline % <--- THIS IS THE NEW "CAP" LINE TO CLOSE THE TOP OF THE TABLE
+    
+    % --- Header Definition with new colors ---
+    \rowcolor{white} 
+     & & 
+    \multicolumn{5}{c|}{\cellcolor{L1_Purple} L1 Perception} &  
+    \multicolumn{2}{c|}{\cellcolor{L2_Orange} L2 Mental Mapping} &
+    \multicolumn{2}{c|}{\cellcolor{L3_Green} L3 Mental Simulation} &
+    \multicolumn{2}{c}{\cellcolor{L4_Blue} L4 Agentic Competence} \\
+    
+    \rowcolor{white} 
+    \textbf{Methods} & \textbf{Avg.} & 
+    \textbf{Geom.} & \textbf{Motion} & \textbf{Rel.} & \textbf{Local.} & \textbf{Orient.} &
+    \textbf{Underst.} & \textbf{Memory} &
+    \textbf{Caus. Reas.} & \textbf{Seq. Plan.} &
+    \textbf{Goal Exec.} & \textbf{Open Expl.} \\
+    % \hline
+
+    % % --- Baselines ---
+    % \rowcolor{navyblue!5}
+    % \multicolumn{15}{l}{\textcolor{black}{\textit{Baseline}}} \\
+    % Chance Level (Random) & - & - & -- & -- & -- & -- & -- & -- & -- & 25.0 & 36.1 & 28.3 & 25.0 & -- \\
+    % Chance Level (Frequency) & - & 34.0 & 62.1 & 32.0 & 29.9 & 33.1 & 25.1 & 47.9 & 28.4 & 25.2 & -- & -- & -- & -- \\
+    \hline
+
+    % --- Proprietary Models ---
+    \rowcolor{navyblue!5}
+    Qwen2.5-VL-7B & 27.5 & 17.8 & 22.6 & 23.9 & 20.6 & 21.6 & 34.7 & 15.2 & 28.4 & 39.8 & 24.5 & 31.1 \\ 
+    After RL & 28.2 & \goodres{19.0}{1.2} & \goodres{25.2}{2.7} & \neutralres{23.6}{-0.4} & \neutralres{20.3}{-0.3} & \neutralres{31.5}{-0.1} & \badres{30.6}{-4.1} & \badres{13.1}{-2.1} & \goodres{33.6}{5.2} & \badres{26.8}{-13.0} & \goodres{29.7}{5.2} & \goodres{40.0}{9.0} \\ 
+
+    \hline
+    \end{tabular}
+    } % End of resizebox
+    \caption{\textbf{RLVR Comparisons.}
+    The table compares the baseline Qwen2.5-VL-7B with the version enhanced by RL on Goal-Exec. tasks. Changes are color-coded as \textcolor{papergreen}{notable gains}, \textcolor{gray}{neutral influence}, and \textcolor{paperred}{drops}.}
+    \label{tab:rl_exp}
+\end{table*}

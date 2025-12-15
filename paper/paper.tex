@@ -1,0 +1,113 @@
+
+\documentclass[]{bytedance_seed}
+
+% single-column: \documentclass[]{bytedance_seed}, 
+%Please prioritize using single-column。
+
+% twocolumn: \documentclass[twocolumn]{bytedance_seed}
+
+\usepackage[toc,page,header]{appendix}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{minitoc}
+\usepackage{amssymb}
+\usepackage[table]{xcolor}
+\usepackage{wrapfig}
+\usepackage[utf8]{inputenc}  % for UTF-8 support
+\usepackage{float}  % for listing environment
+\usepackage{minted}  % for code highlighting
+\usepackage{textcomp}  % for special symbols
+\usepackage{footmisc}
+% table 
+
+\definecolor{papergreen}{HTML}{008000} % 较暗的绿色
+\definecolor{paperred}{HTML}{D00000}   % 较暗的红色
+
+% 命令 \goodres{主要值}{变化值}
+% 用于显示一个好的结果 (绿色, +)
+\newcommand{\goodres}[2]{%
+    #1 {\color{papergreen}\small (+#2)}%
+}
+% 命令 \badres{主要值}{变化值}
+% 用于显示一个坏的结果 (红色, -)
+\newcommand{\badres}[2]{%
+    #1 {\color{paperred}\small (-#2)}%
+}
+% 用于显示一个中性或无对比的结果
+\newcommand{\neutralres}[2]{%
+    #1 {\color{gray}\small (#2)}%
+}
+%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\bench}{\texttt{Our-Bench}\xspace}
+\definecolor{navyblue}{HTML}{0071BC}
+\definecolor{oai-green-200}{HTML}{D7EADF} % 浅绿色
+\definecolor{oai-green-400}{HTML}{A6D3B8} % 中等绿色
+\definecolor{oai-green-600}{HTML}{63AC86} % 深绿色
+\definecolor{oai-gray-300}{HTML}{D9D9D9}  % 浅灰色
+\definecolor{oai-gray-600}{HTML}{808080}  % 深灰色
+\definecolor{L1_Purple}{HTML}{E6E0F8} % A light purple for L1
+\definecolor{L2_Orange}{HTML}{FCEFD8} % A light orange/yellow for L2
+\definecolor{L3_Green}{HTML}{EFF8E0}  % A light green for L3
+\definecolor{L4_Blue}{HTML}{E0F0F8}   % A light blue for L4
+%%%%%%%%%%%%%%%%%%%%
+
+% \title{SpatialTree: How Spatial Abilities Branch Out in MLLMs}
+\title{SpatialTree: How Spatial Abilities Branch Out in MLLMs}
+
+\author[\blacktriangle,\bigstar,*]{Yuxi Xiao}
+\author[\diamondsuit,\bigstar,*]{Longfei Li}
+\author[\bigstar]{Shen Yan}
+\author[\bigstar]{Xinhang Liu}
+\author[\blacktriangle]{Sida Peng}
+\authorbreak
+\author[\diamondsuit]{Yunchao Wei}
+\author[\blacktriangle]{Xiaowei Zhou}
+\author[\bigstar, \dagger]{Bingyi Kang}
+
+%论文单位请使用ByteDance Seed
+\affiliation[\blacktriangle]{Zhejiang University}
+\affiliation[\bigstar]{ByteDance Seed}
+\affiliation[\diamondsuit]{Beijing Jiaotong University}
+
+
+\contribution[\dagger]{Project Lead}
+\contribution[*]{Equal Contribution}
+
+\abstract{
+Spatial abilities in multimodal LLMs manifest hierarchically, spanning multiple levels from perception, through reasoning, to agentic tasks in 3D environments. However, cross-level dependencies among these abilities and their potential to guide data and training strategies for systematically scaling up remain largely unexplored. To address this, we propose SpatialTree, a hierarchical taxonomy organizing spatial abilities from low-level perception (L1) through mental mapping (L2) and mental simulation (L3) to agentic competence (L4). Building on this taxonomy, we construct the first hierarchical, capability-centric benchmark using our Spatial Engine. Guided by correlation analyses on our benchmark, we perform supervised fine-tuning (SFT) and reinforcement learning (RL) at different ability levels to probe their inter-dependencies. We find that low-level abilities (L1) are largely independent but can transfer to higher-level abilities and exhibit synergy during SFT. Furthermore, reinforcement learning proves more effective when applied to higher-level tasks rather than low-level abilities (L1), resulting in improved overall spatial performance. We hope our taxonomy and findings will inspire further research to systematically branch out spatial abilities in MLLMs through dependency-aware training.
+}
+
+\date{\today}
+\correspondence{Bingyi Kang}
+% You can add additional info fields as follows 
+\checkdata[Project Page]{\url{xxx}}
+
+\begin{document}
+\maketitle
+
+%不需要目录就注释掉 注意目录不要和第一页放在一块 要有\newpage
+%\newpage
+%\tableofcontents
+%\newpage
+
+\input{sections/introduction}
+\input{sections/relatedwork}
+\input{sections/approach}
+\input{sections/experiments}
+
+
+\clearpage
+
+\bibliographystyle{plainnat}
+\bibliography{main}
+
+\clearpage
+
+\beginappendix
+
+\input{sections/appendix}
+
+\end{document}

@@ -1,0 +1,153 @@
+\section{The SpatialTree Framework}
+\label{sec:spatialtree_framework}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.98\linewidth]{figures/Samples.pdf}
+    \caption{\textbf{A gallery of representative tasks.} The benchmark, structured by the SpatialTree framework, covers a diverse set of spatial capabilities spanning the four-level hierarchy from perception(L1) to agentic competence(L4).}
+    \vspace{-1.5em}
+    \label{fig:samples}
+\end{figure*}
+
+In this section, we present \textbf{SpatialTree}, a top-down hierarchical decomposition of spatial capabilities into four levels, from high-level agentic competence (L4) to foundational perception (L1). Different samples for different level of capabilities are shown in Fig.~\ref{fig:samples}.
+
+\subsection{\textbf{Agentic Competence}}
+\label{sec:l4-agentic-competence}
+We begin from the ultimate objective of a \textit{Spatial AI Agent} --- an MLLM-driven system that integrates multi-modal observations, updates its memory, and selects actions to interact with the 3D world in an intuitive manner. Formally, the agent performs sequential decision-making by modeling:
+% \begin{equation}
+% (S_t, A_t, M_t) \sim P_\theta \Big( \cdot \;\big|\; O_t, H_{t-1} \Big), 
+% where 
+% H_{t-1} = \left\{ (O_0, A_0, M_0), \dots, (O_{t-1}, A_{t-1}, M_{t-1}) \right\}
+% \label{eq:agent_model}
+% \end{equation}
+\begin{align}
+(S_t, A_t, M_t) & \sim P_\theta \Big( \cdot \;\big|\; O_t, H_{t-1} \Big), \label{eq:agent_model} \\
+\text{where} \quad H_{t-1} & = \left\{ (O_0, A_0, M_0), \dots, (O_{t-1}, A_{t-1}, M_{t-1}) \right\} \nonumber
+\end{align}
+\vspace{-0.2em}
+where $O_t \in \mathcal{O}$ is the current multi-modal observation, $S_t \in \mathcal{S}$ the internal latent state (e.g., goal, plan, or belief), $A_t \in \mathcal{A}$ the chosen action, and $M_t \in \mathcal{M}$ the updated memory representation. MLLMs are expected to output interactive actions executable across 3D environments and embodiments, such as games, simulators, and the physical world. Unlike Vision-Language Action Models (VLAs) decording the low-level control signals in robotics~\citep{intelligence2025pi_}, MLLMs take the language as the only interface to link with environments like GUI Agents~\citep{UI-TARS}.  
+
+\textbf{Spatial Action Mapping.} % In your preamble, make sure you have: \usepackage{booktabs} \usepackage{tabularx}
+In the context of spatial agents, navigation and manipulation represent the most common forms of interaction within 3D environments. We address each with a distinct action space design. For navigation, we conceptualize agent movement as a series of camera motion controls (referring to recent video world models~\citep{genie3,yume}). To enable precise and intuitive control, we decompose complex camera movements into a set of fundamental motion primitives inspired by established cinematography techniques. This approach allows us to translate high-level language instructions (e.g., "move to the left," "look up") into a structured, low-level action space. The six fundamental primitives, their corresponding cinematic terms, degrees of freedom (DoF), and parameterization are detailed in Tab.~\ref{tab:spatial_action_mapping}.
+\begin{table}[t!]
+\centering
+\caption{\textbf{Spatial Action Mapping.} This table defines a standardized interface that maps continuous 6-DoF motions and discrete control signals into action primitives with unified parameterization, enabling MLLMs to plan and execute embodied behaviors for agentic competence evaluation.}
+\label{tab:spatial_action_mapping}
+\vspace{-0.5em}
+\small
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lll>{\centering\arraybackslash}m{3.0cm}>{\centering\arraybackslash}m{2.2cm}cc@{}} 
+\toprule
+\textbf{Primitive} & \textbf{Primitive Term} & \textbf{Category} & \textbf{Description} & \textbf{Action Mapping} & \textbf{Param.} & \textbf{Threshold} \\
+\midrule
+$P_{\text{truck}}$ & Truck & Translation & Move camera left/right (X-axis) & $A / D$ & $v_x$ & $\pm 0.01$ m/s \\
+$P_{\text{dolly}}$ & Dolly & Translation & Move camera forward/backward (Z-axis) & $W / S$ & $v_z$ & $\pm 0.01$ m/s \\
+$P_{\text{pedestal}}$ & Pedestal & Translation & Move camera up/down (Y-axis) & $Q / E$ & $v_y$ & $\pm 0.01$ m/s \\
+$P_{\text{pan}}$ & Pan & Rotation & Turn camera left/right (yaw) & $\leftarrow / \rightarrow$ & $\omega_y$ & $\pm 0.5^\circ$/s \\
+$P_{\text{tilt}}$ & Tilt & Rotation & Tilt camera up/down (pitch) & $\uparrow / \downarrow$ & $\omega_x$ & $\pm 0.5^\circ$/s \\
+$P_{\text{roll}}$ & Roll & Rotation & Roll camera CW/CCW (roll) & $Z / X$ & $\omega_z$ & $\pm 0.5^\circ$/s \\
+\midrule
+$O_{\text{gripper}}$ & Gripper & Gripper Control & Open or close the gripper & $G / H$ & State $\in \{0,1\}$ & N/A \\
+$O_{\text{push/pull}}$ & Push/Pull & Gesture & Push or pull object along forward axis & $P / L$ & Dir. $\in \{-1,+1\}$ & N/A \\
+$O_{\text{grab}}$ & Grab & Gesture & Grab or release object & None & State $\in \{0,1\}$ & $G / H$ \\
+\bottomrule
+\end{tabular}}
+\vspace{-5mm}
+\end{table}
+
+Formally, the camera trajectories are defined with a series of 
+Camera-to-World (C2W) transformation matrices
+$\mathcal{T}_{\text{motion}} = \{\mathbf{T}|_{0}^{i}, i=0,1,\dots,t\}$,
+while the camera transformation at each moment is 
+$\mathcal{T}_{i \rightarrow {i+1}} = \textbf{T}_{i+1}\textbf{T}_{i}^{-1}, 
+\; i=0,1,\dots,t-1$. Then the continuous camera transformation can be decomposed into different components corresponding to each motion primitive, and discretized into the navigation action $A_{\text{nav}}$ using a speed threshold: 
+% \begin{equation}
+% \mathbf{A}_i^{\text{nav}} 
+% = \mathbf{T}_{i \rightarrow i+1} 
+% = \{\Delta \mathbf{R}, \Delta \mathbf{t}\} 
+% \approx 
+% \{ t_i \cdot v_i, \; t_k \cdot\omega_k \mid i,k \in \{x,y,z\}, \; t_i, t_k \in \mathbb{Z}_{\ge 0} \},
+% \label{eq:discrete_navigation_action}
+% \end{equation}
+\begin{align}
+\label{eq:discrete_navigation_action}
+\mathbf{A}_i^{\text{nav}} 
+= \mathbf{T}_{i \rightarrow i+1} 
+& = \{\Delta \mathbf{R}, \Delta \mathbf{t}\} \\
+& \approx 
+\left\{ \begin{array}{l}
+t_i \cdot v_i, \; t_k \cdot\omega_k \mid i,k \in \{x,y,z\}, \\
+t_i, t_k \in \mathbb{Z}_{\ge 0} 
+\end{array} \right\} \nonumber
+\end{align}
+where $\Delta \mathbf{R} = (\Delta R_x, \Delta R_y, \Delta R_z)$ represents the rotation components obtained via Euler decomposition, $\Delta \mathbf{t} = (\Delta t_x, \Delta t_y, \Delta t_z)$ denotes the translation components along the $x$, $y$, and $z$ axes, and $t_i, t_k$ are discrete integers ranging from 0 up to the video frame rate (FPS). For manipulation, we focus on two representative scenarios to simplify the problem and enable controlled evaluation: human-hand manipulation and robotic gripper manipulation. For the gripper setting, we include gripper open/close actions along with wrist-level 6-DoF motion. For the human-hand setting, we define a small set of intuitive gesture primitives (i.e., push, pull, grab) seen in Tab.~\ref{tab:spatial_action_mapping} that capture essential interaction patterns. These manually defined mappings create a unified yet tractable action space for analyzing MLLMs' planning and manipulation competence.
+
+Building on the proposed spatial action mapping, we curate annotated data from diverse sources, including human-hand manipulation videos, navigation video games, robotic arm manipulation datasets, and simulation environments. This unified dataset enables us to evaluate whether MLLMs can accurately plan and execute actions in the defined metric action space. Further implementation details are provided in Sec.~\ref{sec:si-engine} and in the experimental section.
+
+
+\subsection{\textbf{Mental Simulation}}
+\label{sec:l3-mental-simulation}
+Reasoning and planning prior to action execution are essential components of Multimodal Large Language Models (MLLMs), aligning naturally with the Chain-of-Thought paradigm in language model reasoning. In spatial cognitive science, this process is commonly referred to as mental simulation. We further decompose mental simulation into two core components: causal reasoning and sequential planning.
+
+% \textbf{Causal Reasoning} enables MLLMs to model spatial interactions, physical dynamics, and entity relationships within a simulated mental space. It encompasses tasks such as reasoning about object geometry (e.g., how shapes interlock in spatial puzzles), predicting dynamic motion (e.g., how an object traverses a path under kinematic constraints), and analyzing semantic–spatial relations (e.g., object A is to the left of object B). Through such reasoning, MLLMs mentally simulate cause–effect chains in spatial scenarios, thereby establishing the logical substrate upon which subsequent planning can be carried out.
+
+\textbf{Causal Reasoning} allows MLLMs to model spatial interactions, physical dynamics, and entity relationships within a simulated mental space. It includes reasoning about object geometry (e.g., how shapes interlock in spatial puzzles), motion prediction (e.g., how an object traverses a path), and analyzing semantic–spatial relations (e.g., object A is left of object B). By mentally simulating cause–effect chains in spatial scenarios, MLLMs establish the logical substrate for subsequent planning.
+
+% \textbf{Sequential Planning} translates causal insights into coherent, goal-directed action plans formulated within the language space. This process involves designing high-level, step-by-step operational strategies (e.g., "first, move towards the door, then turn right, and finally interact with the handle") and generating abstract navigational routes that respect spatial logic (e.g., "go around the table to reach the sofa"). By chaining these linguistic action primitives, MLLMs formulate strategic plans, ensuring the conceptual sequence aligns with the overarching goal before any low-level execution is attempted.
+
+\textbf{Sequential Planning} converts causal insights into coherent, goal-directed action plans expressed in language. It entails designing high-level, step-by-step strategies (e.g., "first move toward the door, then turn right, and finally interact with the handle") and generating abstract routes that respect spatial logic (e.g., "go around the table to reach the sofa"). By chaining linguistic action primitives, MLLMs produce strategic plans that ensure the conceptual sequence aligns with the overarching goal before any low-level execution.
+
+
+
+
+\vspace{-0.7em}
+\subsection{\textbf{Mental Mapping}}
+\label{sec:l2-mental-mapping}
+\vspace{-0.7em}
+Level 3's advanced mental simulation requires a coherent internal world model, a foundation provided by Level 2's mental mapping. This process constructs a dynamic 3D representation of the environment by relying on two essential facets.
+The first is spatial understanding: the ability to interpret the immediate scene. This includes recognizing objects and their affordances, mapping the spatial relations between them, and understanding the scene from various perspectives (perspective taking). In essence, it's about making sense of what is currently perceived.
+The second facet is memory. It allows the agent to retain this understanding over time, retrieving past observations to build a cognitive map that extends far beyond the current field of view. This creates a persistent and comprehensive mental model of the world. 
+Ultimately, these two facets—understanding the present and remembering the past—organize and integrate the foundational perceptual data from L1, paving the way for L3's predictive simulations.
+
+
+\vspace{-0.7em}
+\subsection{\textbf{Perception}}
+\label{sec:l1-perception}
+\vspace{-0.7em}
+Perception forms the foundation for high-level spatial reasoning. We categorize L1 Perception into five core aspects:
+\textbf{Orientation}: Captures spatial alignment, crucial for understanding the agent’s pose and maintaining balance. Key sub-tasks are \textit{Gravity} (estimating pitch and roll to determine “up”/“down”) and \textit{Object Orientation} (recognizing object poses), supporting scene reconstruction and manipulation.
+\textbf{Geometry}: Involves spatial form, size, and metric relationships. Sub-tasks include \textit{Size}, \textit{Shape}, and \textit{Distance}, enabling reasoning about object properties and facilitating navigation and grasping.
+\textbf{Motion}: Encodes spatial dynamics over time. Sub-tasks are \textit{Egocentric Motion} (self-motion estimation) and \textit{Allocentric Motion} (tracking object or scene changes), critical for predicting future states and planning actions.
+\textbf{Relation}: Concerns spatial relationships between entities. Sub-tasks include \textit{Correspondence} (matching entities across views) and \textit{Relative Direction} (e.g., left of, in front of), supporting object tracking, path planning, and interaction reasoning.
+\textbf{Localization}: Anchors perception within 3D space. Sub-tasks include \textit{3D Detection} (identifying object extents) and \textit{3D Grounding} (associating observations with coordinates), enabling scene reconstruction, navigation, and embodied reasoning.
+
+\section{Spatial Engine: The Annotation Pipeline}
+\label{sec:si-engine}
+We propose an extensible data engine designed to generate annotations for every layer of the SpatialTree. Our approach begins with a diverse set of low-level 3D perception models, each tailored to a specific task, including metric depth estimation~\citep{wang2025moge2,yang2024depth}, orientation estimation~\citep{orient_anything}, gravity estimation~\citep{veicht2024geocalib}, correspondence matching~\citep{leroy2024grounding, xiangli2025doppelgangers++}, 3D localization~\citep{mao2025spatiallm}, 3D point tracking~\citep{xiao2024spatialtracker, xiao2025spatialtrackerv2}, and camera pose estimation~\citep{wang2025vggt, wang2025pi}. Nevertheless, all these comprehensive 3D perception models can be seamlessly encompassed within our taxonomy of five perception abilities.
+
+\textbf{Data Annotation Framework.}
+As shown in Fig.~\ref{fig:Data_Engine_Method}, our pipeline encapsulates three hierarchical entities: models, pipelines, and workflows. The lowest level comprises the perception models described above, along with advanced MLLMs for semantic captioning. Building upon these models, we construct several pipelines that serve as atomic components for higher-level workflows. Specifically, we implement 12 pipelines, including metric 3D reconstruction, 3D orientation alignment, 3D point tracking, and affordance pointing. Each pipeline processes raw sensory data, such as RGB images or 3D point clouds, and produces intermediate outputs that are further integrated by the workflows. Based on these pipelines, we assemble 24 workflows, each targeting a specific combination of abilities, to generate comprehensive annotations for our SpatialTree. These reusable pipelines streamline annotation and facilitate future extensions. Overall, this hierarchical design ensures modularity, scalability, and a clear separation of responsibilities across models, pipelines, and workflows.
+
+\begin{figure}[tbp]
+\centering
+\includegraphics[width=0.98\linewidth]{figures/SI-Engine.pdf}
+\caption{
+\textbf{SpatialTree Data Engine.} A highly modular and scalable framework that decomposes high-level spatial tasks into low-level components, supporting human-in-the-loop supervision.
+}%
+\vspace{-1.5em}
+\label{fig:Data_Engine_Method}
+\end{figure}
+
+\textbf{Data Resources.}
+As seen in the Appendix, our SpatialTree-Bench is constructed by systematically reorganizing numerous recent datasets (detailed in the Appendix)~\citep{yang2025thinking, yang2025mmsi, zhu2024llava, wang2024spatial, yin2025spatial, lin2025towards, jia2025omnispatial, yang2025embodiedbench, wang2025spatialviz, xu2025multi, ma20243dsrbench} to address their scattered capability coverage and over-reliance on simple questions. We first map each question to our SpatialTree framework and then enhance the evaluation protocol; for instance, complex reasoning tasks from CameraBench and MMSI-Bench are converted to a hybrid \textit{multi-option + LLM-as-a-Judge} format for a finer-grained assessment. To fill the remaining capability gaps, we introduce \textbf{SpatialPlus}, a new dataset targeting underrepresented abilities (e.g., L1 Orientation, L1 Shape, L2 Spatial Caption) with a primary emphasis on L4 Agentic Competence. We leverage our proprietary \textbf{SpatialEngine} to automatically create annotations from a diverse array of video sources, including 3D reconstruction datasets, in-game footage~\cite{ju2024miradata}, egocentric manipulation videos~\citep{egodex}, and robotics data~\citep{khazatsky2024droid}. More implementation details are discussed in Appendix.
+
+% Furthermore, to address the remaining gaps in capability coverage, we introduce our \textbf{SpatialPlus} dataset. It is specifically designed to target underrepresented abilities such as Orientation (L1), Shape (L1), and Spatial Caption (L2), with a primary emphasis on the complex tasks of Agentic Competence (L4). 
+
+
+
+
+
+
+
+
+

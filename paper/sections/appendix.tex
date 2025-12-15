@@ -1,0 +1,294 @@
+% Setting appendix numbering style
+% Note: \appendix is already called by \beginappendix in paper.tex
+\renewcommand\thefigure{\Alph{figure}} % redefining the figure numbering style
+\renewcommand\thetable{\Alph{table}}   % redefining the table numbering style
+\renewcommand\thesection{\Alph{section}}   % redefining the section numbering style
+\setcounter{figure}{0} % reset counter 
+\setcounter{table}{0} % reset counter
+\setcounter{section}{0} % reset counter
+
+% Note: Appendix title is already created by \beginappendix command
+\label{sec:appendix}
+
+% Table of contents for appendix
+\tableofcontents
+
+\newpage
+
+\section{Visualization of Data Sources}
+How different datasets contribute to our SpatialTree evaluation is shown in Fig.~\ref{fig:datasource}.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.98\linewidth]{figures/datasource_new.png}
+   \caption{\textbf{Construction of SpatialTree-Bench.} We build our benchmark by reorganizing various existing datasets and mapping them to our capability tree, where \textbf{SpatialPlus}, a complementary dataset are introduced to ensure the capability coverage.}
+    \label{fig:datasource}
+\end{figure}
+
+
+\section{Evaluation Metrics Details}
+
+\paragraph{Multi-Option QAs.} 
+For multi-option question answering, each model is evaluated on its ability to select the correct option from a predefined set. We measure accuracy by comparing the predicted choice against the ground-truth answer. This paradigm captures a model's understanding of spatial relations, object properties, and causal dynamics within a scene, corresponding to the low- and mid-level capabilities in the SpatialTree (L1–L3).
+
+\paragraph{Numeric QAs.} 
+Numeric QAs require models to predict continuous quantities such as distances, angles, or 3D coordinates. We evaluate performance using relative error metrics, for example: 
+\[
+\text{Relative Error} = \frac{|\hat{y}-y|}{|y|},
+\] 
+where $\hat{y}$ is the predicted value and $y$ is the ground truth. This metric ensures that predictions are scaled appropriately across different magnitudes and emphasizes precision in spatial reasoning.
+
+\paragraph{GPT Judge.} 
+For tasks that are open-ended or involve complex reasoning (e.g., trajectory description, action sequence explanation), we leverage a GPT-based judge to assess correctness. The judge evaluates whether the generated response satisfies the task requirements, optionally scoring partial correctness. This approach allows flexible evaluation beyond rigid numeric or multiple-choice formats, especially for mid- and high-level capabilities in L3–L4.
+
+\paragraph{Agentic Evaluation.} 
+To assess agentic competence, models are deployed in interactive simulated environments, such as those provided by EmbodiedBench~\citep{yang2025embodiedbench}. We evaluate navigation and manipulation tasks along multiple dimensions: success rate in completing the target goal, relative translation accuracy, and directional alignment. For each action step, a combined metric is computed using relative distance and cosine similarity of movement vectors, producing a normalized score in $[0,1]$. Aggregating scores over all steps yields a comprehensive measure of an agent’s ability to plan and execute actions in long-horizon, embodied tasks.
+
+
+\section{SpatialPlus: Complementary Data Annotations for SpatialTree}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.98\linewidth]{figures/orientation.pdf}
+    \caption{\textbf{Orientation Annotations.} The left side is the gravity field estimated from GeoCalib~\cite{veicht2024geocalib}, while the right side is from OrientAnything.}
+    \label{fig:orientation}
+\end{figure}
+
+\subsection{Orientations (L1)}
+The Orientation capability, a fundamental yet under-explored area, involves estimating both gravity direction and 3D object orientation. To generate annotations, we leveraged Geocalib~\cite{veicht2024geocalib} for gravity vector estimation and OrientAnything~\cite{orient_anything} for object poses. We applied these tools to datasets suited for each task: for gravity, we annotated 500 images sampled from the diverse, drone-captured TartanAir~\cite{wang2020tartanair} dataset; for object orientation, we utilized the object-centric Co3dv2~\cite{reizenstein21co3d} dataset (Seen in Fig.~\ref{fig:orientation}). 
+For gravity, the goal is to estimate the camera’s orientation relative to the gravity vector, typically represented by the \textit{pitch} and \textit{roll} angles. Formally, let the gravity vector in the world frame be:
+\begin{equation}
+\mathbf{g}_w = 
+\begin{bmatrix}
+0 \\ 0 \\ -1
+\end{bmatrix},
+\end{equation}
+and let $\mathbf{R}_{cw} \in SO(3)$ denote the rotation from the world frame to the camera frame. The gravity direction in the camera frame is then:
+\begin{equation}
+\mathbf{g}_c = \mathbf{R}_{cw} \, \mathbf{g}_w.
+\end{equation}
+From $\mathbf{g}_c = [g_x, g_y, g_z]^\top$, the pitch and roll angles can be computed as:
+\begin{align}
+\text{pitch} &= \arctan2(-g_x, \sqrt{g_y^2 + g_z^2}), \\
+\text{roll}  &= \arctan2(g_y, g_z).
+\end{align}
+Here, \textit{pitch} measures the forward--backward tilt of the camera, while \textit{roll} measures the sideways tilt. To evaluate an MLLM's proficiency in this task, we require the model to analyze the input image and return these same three parameters in a structured JSON format. An example of our prompt template is shown in Listing~\ref{lst:orientation_prompt}.
+\begin{listing}[H]
+\begin{minted}[
+    frame=single,
+    framesep=2mm,
+    baselinestretch=1.2,
+    fontsize=\small,
+    linenos,
+    breaklines=true,
+    bgcolor=gray!5,
+    xleftmargin=10pt,
+    xrightmargin=10pt
+]{json}
+{
+  "role": "system",
+  "content": "You are a vision model specialized in estimating camera orientation from images. 
+  Your task is to infer the gravity direction from the input image by predicting the 
+  camera's pitch and roll angles, as well as the vertical field of view (vFOV).
+  Always output your prediction strictly in the following JSON format: 
+  {
+    \"pitch\": <float, camera pitch angle in degrees>,
+    \"roll\": <float, camera roll angle in degrees>,
+    \"vfov\": <float, vertical field of view in degrees>
+  }  
+  Do not include any additional text or explanation outside of the JSON object."
+}
+\end{minted}
+\caption{\textbf{Prompt template} for Orientation Estimation.}
+\label{lst:orientation_prompt}
+\end{listing}
+For evaluation, we move beyond a simple absolute error metric and adopt a probabilistic approach that accounts for the inherent uncertainty of the ground-truth annotations provided by \textit{Geocalib}. For each predicted parameter (pitch, roll, and vFOV), \textit{Geocalib} also outputs an uncertainty value, which we interpret as the standard deviation ($\sigma_{gt}$). We then calculate a normalized similarity score ($S$) for each parameter using a Gaussian kernel, defined as:
+\begin{equation}
+\label{eq:uncertainty_score}
+S(y_{\text{pred}}, y_{\text{gt}}, \sigma_{\text{gt}}) = \exp\left(-\frac{(y_{\text{pred}} - y_{\text{gt}})^2}{2\sigma_{\text{gt}}^2}\right)
+\end{equation}
+where $y_{\text{pred}}$ is the MLLM's prediction, $y_{\text{gt}}$ is the ground-truth value from \textit{Geocalib}, and $\sigma_{\text{gt}}$ is its associated uncertainty. This scoring function gracefully penalizes deviations from the ground truth: the score is 1 for a perfect match and decays towards 0 as the error increases. Crucially, a larger uncertainty $\sigma_{\text{gt}}$ in the ground truth leads to a slower decay, making the scoring more lenient when the ground truth itself is less certain. The final score for the task is the average of the individual scores for pitch, roll, and vFOV. For object orientation estimation, most of metrics are similar to gravity, and the evaluation are conducted on Azimuth, Polar and Rotation these three angles.
+
+\subsection{Agentic Competence (L4)}
+\subsection{Goal-driven Navigation}
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}{0.365\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/img_pair.pdf}
+        \caption{}
+        \label{fig:sub_a}
+    \end{subfigure}
+    \hfill % 子图间填充空白
+    \begin{subfigure}{0.6\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{figures/navigation.pdf}
+        \caption{}
+        \label{fig:sub_b}
+    \end{subfigure}
+    \caption{\textbf{Navigation Data Curation.} 
+    (a) shows paired images used for evaluation, where MLLMs are expected to move from left to right. 
+    (b) illustrates our curation process: reconstructing metric 3D models and camera trajectories, then converting them into actions.}
+    \label{fig:navigation}
+\end{figure}
+
+\textbf{Goal-driven Navigation.}
+We leverage our SpatialEngine to get the action annotations as shown in Fig.~\ref{fig:navigation}. We first extract the metric pose trajectories from the games videos, and convert them into discrete actions with our spatial action mapping, and then we randomly sample several image pairs from the video with the correspondence checking. For evaluation, the goal is a image, and the MLLMs are supposed to control the character to move to the target positions. We use the prompt template as below:
+\begin{listing}[H]
+\begin{minted}[
+    frame=single,
+    framesep=2mm,
+    baselinestretch=1.2,
+    fontsize=\small,
+    breaklines=true,
+    bgcolor=gray!5,
+    xleftmargin=10pt,
+    xrightmargin=10pt
+]{json}
+{
+  "role": "system",
+  "content": "Task Details:\n
+Analyze Images: Compare the start image <Image 1> and the target image <Image 2> to understand the required translation and rotation for the robot arm's end-effector.\n
+Define Motion: Decompose the movement into 6 steps, each containing one or more elementary actions.\n
+Quantify Actions: For each action, specify an integer step_num that represents its intensity.\n\n
+Coordinate System:\n
+Right-hand frame attached to the end-effector: +Z forward, +X right, +Y downward.\n\n
+Action Space:\n
+Translation: Dolly In (W), Dolly Out (S), Truck Left (A), Truck Right (D), Pedestal Up (space), Pedestal Down (shift).\n
+Rotation: Pan Left (left arrow), Pan Right (right arrow), Tilt Up (up arrow), Tilt Down (down arrow), Roll CW (clockwise), Roll CCW (counterclockwise).\n
+Special Action: Stay (STOP).\n\n
+Step Size:\n
+Translation: 0.019375 m/step. Rotation: 0.4509 rad/step.\n\n
+Output Format:\n
+Return a single JSON object with keys step_1–step_6. Each step contains:\n
+  actions: list of action symbols\n
+  step_nums: corresponding integers.\n\n
+Example:\n
+{
+  \"step_1\": {
+    \"actions\": [\"W\", \"A\"],
+    \"step_nums\": [5, 2]
+  },
+  \"step_2\": {
+    \"actions\": [\"W\", \"up_arrow\"],
+    \"step_nums\": [3, 4]
+  }
+}"
+}
+\end{minted}
+\caption{\textbf{Prompt of navigation.}}
+\label{lst:navigation_p}
+\end{listing}
+In this prompt, translation and rotation steps are computed from the actual movement, while capping the number of steps at 10 to prevent overly long action sequences. To evaluate MLLMs, we compute a normalized metric in the range $[0, 1]$ by combining \textbf{relative distance} and \textbf{directional accuracy}. Specifically, for each step, let $\Delta \mathbf{p}_{\text{pred}}$ and $\Delta \mathbf{p}_{\text{gt}}$ denote the predicted and ground-truth translation vectors, respectively. 
+
+The \textbf{relative distance score} is defined as:
+\[
+s_d = \max\Big(0, 1 - \frac{\|\Delta \mathbf{p}_{\text{pred}} - \Delta \mathbf{p}_{\text{gt}}\|}{\|\Delta \mathbf{p}_{\text{gt}}\|}\Big),
+\]
+
+and the \textbf{directional score} is computed by the cosine similarity:
+\[
+s_\theta = \frac{\Delta \mathbf{p}_{\text{pred}} \cdot \Delta \mathbf{p}_{\text{gt}}}{\|\Delta \mathbf{p}_{\text{pred}}\| \, \|\Delta \mathbf{p}_{\text{gt}}\|}.
+\]
+
+The final step-wise accuracy is then: $s_{\text{step}} = s_d \cdot \max(0, s_\theta)$
+
+which ensures a value in $[0,1]$, where 1 indicates perfect alignment in both distance and direction. Aggregating $s_{\text{step}}$ across all steps provides a comprehensive measure of the model's precision in executing end-effector motions.
+
+\textbf{Goal-driven Manipulation}
+For the \textbf{Goal-Driven Manipulation} capability, we utilize action annotations from the \texttt{Droid}~\cite{khazatsky2024droid} and \texttt{EgoDex}~\cite{egodex} datasets. This task requires the MLLM to generate a sequence of precise actions to move a robot end-effector or a human hand from a starting state to a target state, both specified by images. The action space for \texttt{Droid} encompasses 7-DoF control: 6-DoF for the end-effector's pose (translation and rotation) and a binary state for the gripper (open/close). A similar action space is adapted for \texttt{EgoDex}, controlling wrist pose and finger grip. The MLLM is prompted to generate a sequence of continuous action vectors, as shown in the template below:
+
+\begin{listing}[t]
+\begin{minted}[
+    frame=single,
+    framesep=2mm,
+    baselinestretch=1.2,
+    fontsize=\small,
+    breaklines=true,
+    bgcolor=gray!5,
+    xleftmargin=10pt,
+    xrightmargin=10pt
+]{json}
+{
+  "role": "system",
+  "content": "Task Details:\n
+Compare the start image <Image 1> and target image <Image 2> to infer the translation and rotation required for the robot arm's end-effector.\n
+Decompose the motion into up to 6 steps, each combining any number of elementary actions.\n\n
+Action Space:\n
+We define a 7D action vector per step:\n
+[dx, dy, dz, d_roll, d_pitch, d_yaw, gripper_state]\n
+- Translation (dx, dy, dz): Displacement in meters along +X, +Y, +Z.\n
+- Rotation (d_roll, d_pitch, d_yaw): Rotation in radians about +Z, +X, +Y respectively.\n
+- gripper_state: 0=open, 1=closed.\n\n
+Each dx, dy, dz, d_roll, d_pitch, d_yaw is computed from selected actions and their step_nums:\n
+delta_q = step_num * unit_step_size  (translation in meters or rotation in radians)\n\n
+Available Actions:\n
+W/S: Dolly In/Out (+/-Z)\n
+A/D: Truck Left/Right (-/+X)\n
+space/shift: Pedestal Up/Down (-/+Y)\n
+left_arrow/right_arrow: Pan Left/Right (+/- yaw)\n
+up_arrow/down_arrow: Tilt Up/Down (+/- pitch)\n
+clockwise/counterclockwise: Roll CW/CCW (+/- roll)\n
+STOP: No movement\n\n
+Output Format:\n
+Return a single JSON object where each step is a key (\"step_1\", \"step_2\", ...).\n
+Each step contains:\n
+- actions: a list of action symbols\n
+- step_nums: a list of integers specifying intensity (1–10)\n
+- gripper: 0 or 1 for gripper state\n\n
+Example:\n
+{
+  \"step_1\": {
+    \"actions\": [\"W\", \"A\"],
+    \"step_nums\": [5, 2],
+    \"gripper\": 0
+  },
+  \"step_2\": {
+    \"actions\": [\"clockwise\"],
+    \"step_nums\": [3],
+    \"gripper\": 1
+  }
+}"
+}
+\end{minted}
+\caption{\textbf{Prompt for Goal-Driven Manipulation with 7D Action Representation.}}
+\label{lst:manipulation_p}
+\end{listing}
+
+To evaluate the MLLM's performance, we assess the accuracy of the predicted action sequence against the ground truth. For the translational component of the motion, we reuse the step-wise accuracy metric $s_{\text{step}}$ from the navigation task, which combines relative distance and directional scores. For the rotational component, we compute a normalized score based on the angular difference between the predicted orientation and the ground truth. Let $R_{\text{pred}}$ and $R_{\text{gt}}$ be the predicted and ground-truth rotation matrices for a step. The rotational error angle $\theta_{\text{err}}$ is calculated from the error rotation matrix $R_{\text{err}} = R_{\text{pred}} R_{\text{gt}}^T$:
+\[
+\theta_{\text{err}} = \arccos\left(\frac{\text{Tr}(R_{\text{err}}) - 1}{2}\right).
+\]
+The \textbf{rotation score} $s_{\text{rot}}$ is then defined as:
+\[
+s_{\text{rot}} = \max\Big(0, 1 - \frac{\theta_{\text{err}}}{\pi}\Big),
+\]
+which normalizes the error to a $[0, 1]$ range, where 1 indicates a perfect rotational match. Finally, the \textbf{gripper score} $s_{\text{gripper}}$ is a binary accuracy (1 if the predicted state matches the ground truth, 0 otherwise). The final score for each step is a weighted combination of these three metrics, providing a holistic evaluation of the model's ability to perform precise, multi-faceted manipulation tasks.
+
+\section{Embodied Agent Evaluation within Simulation}
+
+EmbodiedBench~\citep{yang2025embodiedbench} provides a closed-loop evaluation framework in which MLLMs are deployed within interactive simulators. It includes four primary environments—\textit{EB-ALFRED}, \textit{EB-Habitat}, \textit{EB-Navigation}, and \textit{EB-Manipulation}—supporting long-horizon tasks that require both high-level planning and low-level control. Following the benchmark’s evaluation protocol, we assess our models’ navigation and manipulation capabilities in these simulated settings.
+
+\section{Benchmark Metric Aggregation}
+
+To derive a single, comprehensive score for a model's spatial intelligence, we employ a hierarchical aggregation methodology. This approach is designed to reflect the complex, multi-layered nature of spatial cognition, rather than treating all abilities as equally important. The design is principally guided by established theories in cognitive psychology, which posit that spatial intelligence is constructed hierarchically, with fundamental perceptual skills forming the bedrock for more abstract reasoning and planning.
+
+Our aggregation framework is built upon the \textit{SpatialTree} structure. The assignment of weights within this tree is determined by a synthesis of theoretical principles and empirical, data-driven insights:
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.98\linewidth]{figures/weighted_tree.pdf}
+\caption{An illustration of the hierarchical weighting scheme for metric aggregation with in the \textit{SpatialTree}. Each node represents a capability layer, with the assigned weight used for the bottom-up calculation of the final score. The weighting prioritizes foundational perceptual abilities (L1) as they are prerequisites for higher-level cognitive tasks.}%
+\label{fig:weighted_tree}
+\end{figure}
+
+\textbf{Cognitive Hierarchy.} In line with cognitive science literature, our weighting scheme prioritizes foundational capabilities, as shown in Fig.~\ref{fig:weighted_tree}. The L1 layer, which represents low-level spatial perception, is assigned the largest weight, as these skills are prerequisites for almost all higher-level spatial tasks found in L2 (Mental Mapping) and L3 (Mental Simulation).
+
+\textbf{Empirical Dependency from Correlation Analysis.} The theoretical hierarchy is further refined and validated by our empirical findings from the Pearson correlation heatmap (Fig.~\ref{fig:wrap_example}). The heatmap allows us to identify \textit{atomic abilities} that exhibit strong, widespread correlations with a multitude of other skills. These influential abilities are considered more fundamental to the overall spatial intelligence network and are consequently assigned higher weights within their respective sub-trees. This ensures our metric is not just theoretically sound, but also reflects the actual dependencies observed in model performance.
+
+The final score is calculated via a bottom-up, weighted summation. The performance score for any parent node in the tree is the weighted sum of the scores of its immediate children. This process is recursively applied until the root node is reached, yielding a single, principled score that holistically quantifies the spatial intelligence of a given MLLM.
+
+
+
+\section{LLM Usage Declarations}
+We declare that Large Language Models (LLMs) were used in a limited capacity during the preparation of this manuscript. Specifically, LLMs were employed for grammar checking, word choice refinement, and typo correction. All core technical contributions, experimental design, analysis, and conclusions are entirely our own. The use of LLMs did not influence the scientific methodology, result interpretation, or theoretical contributions of this research.
+>>>>>>> 079878c (appendix)
