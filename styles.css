@@ -64,7 +64,7 @@ main {
 }
 
 .hero {
-  width: min(62.5rem, calc(100% - 2rem));
+  width: min(65rem, calc(100% - 2rem));
   margin: 0 auto;
   padding: 4.5rem 0 3.5rem;
   text-align: left;
@@ -72,7 +72,7 @@ main {
 
 .hero-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 0.85fr);
   gap: 1.5rem;
   align-items: center;
 }
@@ -81,6 +81,8 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
+  align-items: center;
+  text-align: center;
 }
 
 .eyebrow {
@@ -176,7 +178,7 @@ main {
   gap: 0.625rem;
   flex-wrap: wrap;
   margin-top: 1.125rem;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .resource-btn {
