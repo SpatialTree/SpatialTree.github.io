@@ -53,7 +53,7 @@
           <p class="eyebrow">Capability taxonomy · data engine · benchmark</p>
           <h1 class="hero-title">
             <!-- <span class="title-brand" aria-hidden="true">SpatialTree</span> -->
-            <span class="nowrap"><span class="artistic-brand">SpatialTree</span> : How Spatial Abilities</span><br />Branch Out in MLLMs</span>
+            <span class="nowrap"><span class="artistic-brand">SpatialTree :</span>  How Spatial Abilities</span><br />Branch Out in MLLMs</span>
           </h1>
           <p class="authors-line">
             Yuxi Xiao<sup>▲,★,*</sup>, Longfei Li<sup>♦,★,*</sup>, Shen Yan<sup>★</sup>, Xinhang Liu<sup>★</sup>, Sida Peng<sup>▲</sup>, <br />Yunchao Wei<sup>♦</sup>,
@@ -271,52 +271,130 @@
           SpatialTree-Bench measures 16 closed/open MLLMs across L1–L4 with balanced weighting, revealing orthogonal perception atoms and tightly coupled higher
           layers.
         </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Avg.</th>
-              <th>Geometry</th>
-              <th>Relational</th>
-              <th>Memory</th>
-              <th>Goal Exec.</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Gemini 2.5 Pro</td>
-              <td>53.9</td>
-              <td>53.9</td>
-              <td>64.6</td>
-              <td>60.7</td>
-              <td>24.9</td>
-            </tr>
-            <tr>
-              <td>Gemini 2.5 Flash</td>
-              <td>47.8</td>
-              <td>42.9</td>
-              <td>62.8</td>
-              <td>60.5</td>
-              <td>22.7</td>
-            </tr>
-            <tr>
-              <td>GPT-5</td>
-              <td>46.7</td>
-              <td>44.5</td>
-              <td>58.4</td>
-              <td>55.3</td>
-              <td>23.6</td>
-            </tr>
-            <tr>
-              <td>Best Open (Qwen 2.5VL-72B)</td>
-              <td>41.3</td>
-              <td>38.5</td>
-              <td>59.3</td>
-              <td>36.4</td>
-              <td>23.8</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-legend" aria-label="Leaderboard legend">
+          <span class="legend-item"><span class="legend-swatch swatch-closed" aria-hidden="true"></span>Closed-source</span>
+          <span class="legend-item"><span class="legend-swatch swatch-open" aria-hidden="true"></span>Open-source</span>
+        </div>
+        <div class="table-wrap" aria-label="SpatialTree-Bench leaderboard">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Avg.</th>
+                <th>Perception</th>
+                <th>Mental Mapping</th>
+                <th>Mental Simulation</th>
+                <th>Agentic Competence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="model-closed">
+                <td title="Gemini 2.5 Pro">Gemini 2.5 Pro</td>
+                <td>50.1</td>
+                <td>49.3</td>
+                <td>53.8</td>
+                <td>51.3</td>
+                <td>45.8</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="Gemini 2.5 Pro NT">Gemini 2.5 Pro NT</td>
+                <td>41.4</td>
+                <td>38.8</td>
+                <td>46.9</td>
+                <td>42.4</td>
+                <td>37.6</td>
+              </tr>
+              <tr class="model-open">
+                <td title="Qwen3VL-235B">Qwen3VL-235B</td>
+                <td>40.0</td>
+                <td>34.6</td>
+                <td>46.6</td>
+                <td>39.9</td>
+                <td>38.9</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="Gemini 2.5 Flash">Gemini 2.5 Flash</td>
+                <td>39.0</td>
+                <td>38.3</td>
+                <td>46.3</td>
+                <td>37.8</td>
+                <td>33.5</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="GLM4.5V">GLM4.5V</td>
+                <td>36.0</td>
+                <td>35.0</td>
+                <td>34.4</td>
+                <td>36.3</td>
+                <td>38.3</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="Gemini 2.5 Flash NT">Gemini 2.5 Flash NT</td>
+                <td>35.8</td>
+                <td>33.5</td>
+                <td>41.6</td>
+                <td>31.4</td>
+                <td>36.7</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="Seed1.6-Vision">Seed1.6-Vision</td>
+                <td>35.7</td>
+                <td>36.3</td>
+                <td>36.6</td>
+                <td>35.4</td>
+                <td>34.6</td>
+              </tr>
+              <tr class="model-open">
+                <td title="Qwen3VL-30B">Qwen3VL-30B</td>
+                <td>35.3</td>
+                <td>30.2</td>
+                <td>40.9</td>
+                <td>36.7</td>
+                <td>33.4</td>
+              </tr>
+              <tr class="model-open">
+                <td title="Qwen 2.5VL-72B">Qwen 2.5VL-72B</td>
+                <td>33.0</td>
+                <td>28.8</td>
+                <td>37.8</td>
+                <td>34.6</td>
+                <td>31.3</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="GPT-4o">GPT-4o</td>
+                <td>31.9</td>
+                <td>26.8</td>
+                <td>34.9</td>
+                <td>33.2</td>
+                <td>32.5</td>
+              </tr>
+              <tr class="model-open">
+                <td title="Qwen 2.5VL-32B">Qwen 2.5VL-32B</td>
+                <td>27.9</td>
+                <td>24.0</td>
+                <td>26.8</td>
+                <td>34.3</td>
+                <td>26.4</td>
+              </tr>
+              <tr class="model-open">
+                <td title="Qwen 2.5VL-7B">Qwen 2.5VL-7B</td>
+                <td>27.5</td>
+                <td>20.9</td>
+                <td>28.9</td>
+                <td>32.4</td>
+                <td>27.8</td>
+              </tr>
+              <tr class="model-closed">
+                <td title="Kimi-VL-A3B">Kimi-VL-A3B</td>
+                <td>24.4</td>
+                <td>20.3</td>
+                <td>25.9</td>
+                <td>27.2</td>
+                <td>24.2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <div class="notes">
           <p>Hierarchy insight: L1 abilities are largely orthogonal, while L3 and L4 scores are strongly correlated.</p>
           <p>Atomic prompting: Correspondence (+12.1%), depth (+22.1%), and size (+5.1%) cues improve navigation without retraining.</p>

@@ -514,14 +514,135 @@ main {
   margin-top: 0.5rem;
 }
 
-.taxonomy table,
-.benchmark table {
+.taxonomy table {
   width: 100%;
   border-collapse: collapse;
   background: var(--panel);
   border: 0.0625rem solid var(--border);
   border-radius: 0.625rem;
   overflow: hidden;
+}
+
+/* Benchmark Table Styles */
+.benchmark .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.benchmark table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  min-width: 46rem;
+  margin: 0;
+  border: none;
+}
+
+.benchmark .table-legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.benchmark .legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  white-space: nowrap;
+}
+
+.benchmark .legend-swatch {
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+
+/* Header */
+.benchmark thead th {
+  position: sticky;
+  top: 0;
+  background: #f8f9fb;
+  z-index: 1;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Cells */
+.benchmark td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+/* Model Name Column */
+.benchmark th:first-child,
+.benchmark td:first-child {
+  width: 22%;
+  max-width: 14rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  text-align: left;
+}
+
+/* Avg Column Highlight */
+.benchmark th:nth-child(2),
+.benchmark td:nth-child(2) {
+  background: rgba(54, 85, 255, 0.04);
+  color: var(--accent);
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Other Number Columns */
+.benchmark th:not(:first-child):not(:nth-child(2)),
+.benchmark td:not(:first-child):not(:nth-child(2)) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Row Hover */
+.benchmark tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.benchmark tbody tr:hover {
+  background-color: rgba(54, 85, 255, 0.03) !important;
+}
+
+/* Open/Closed Models */
+.benchmark tbody tr.model-open {
+  background: linear-gradient(90deg, rgba(54, 85, 255, 0.06) 0%, transparent 100%);
+}
+
+.benchmark tbody tr.model-closed {
+  background: transparent;
+}
+
+/* Legend Swatches */
+.benchmark .legend-swatch.swatch-open {
+  background: rgba(54, 85, 255, 0.15);
+}
+
+.benchmark .legend-swatch.swatch-closed {
+  background: transparent;
 }
 
 table th,
