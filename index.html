@@ -107,11 +107,23 @@
     <main>
       <section id="overview" class="section">
         <h2>Overview</h2>
-        <p>
-          SpatialTree is a capability-centric roadmap for spatial intelligence in MLLMs. We decompose spatial reasoning into four dependent layers, build a data
-          engine (SpatialEngine + SpatialPlus) that aligns annotations with the tree, and release SpatialTree-Bench to measure how perception atoms support
-          higher-level reasoning and action.
-        </p>
+        <div class="tldr-box">
+          <p class="tldr">
+            <strong>TL;DR:</strong> SpatialTree introduces a four-layer capability taxonomy (L1–L4) for spatial intelligence in MLLMs, 
+            along with SpatialEngine (data generation) and SpatialTree-Bench (evaluation). Our benchmark shows that atomic 
+            prompting can improve navigation by up to +22% without retraining.
+          </p>
+        </div>
+        <div class="overview-video-container">
+          <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+            <iframe
+              src="https://www.youtube.com/embed/XKcBk9Ycug4"
+              style="position:absolute;top:0;left:0;width:100%;height:100%;"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </div>
         <ul class="key-points">
           <li>27 atomic abilities arranged into L1–L4 with weights grounded in cognitive theory + empirical correlations.</li>
           <li>12 perception pipelines rolled into 24 workflows that populate SpatialTree leaves with consistent metrics.</li>
@@ -327,13 +339,14 @@
             <h3>Paper PDF</h3>
             <p>Full submission with appendix.</p>
           </a>
-          <a class="resource-card" href="paper/paper.tex" target="_blank" rel="noopener">
-            <h3>LaTeX Source</h3>
-            <p>bytedance_seed.cls + structured sections.</p>
-          </a>
           <article class="resource-card">
             <h3>BibTeX</h3>
-            <p class="bibtex-entry">@misc{spatialtree2025, title={SpatialTree: Branching Out Spatial Intelligence in MLLMs}, year={2025}, note={Project page: spatree.github.io}}</p>
+            <pre class="bibtex-entry"><code>@misc{spatialtree2025,
+  title={SpatialTree: How Spatial Abilities
+    Branch Out in MLLMs},
+  year={2025},
+  note={Project page: spatree.github.io}
+}</code></pre>
           </article>
         </div>
       </section>
