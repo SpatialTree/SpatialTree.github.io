@@ -477,18 +477,70 @@ main {
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 1rem;
+}
+
+.pillar-card .figure-frame {
+  width: 100%;
+  background: #f8f9fa;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.pillar-card .figure-frame img,
+.pillar-card .figure-frame video {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .pillar-list {
   margin: 0;
-  padding-left: 1.125rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pillar-list li {
+  position: relative;
+  padding-left: 1rem;
+  font-size: 0.9rem;
   color: var(--muted);
-  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.pillar-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.pillar-list li strong {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .interactive-tree p {
   max-width: 40rem;
+}
+
+.interaction-hint {
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-top: -0.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.interaction-hint::before {
+  content: "👆";
+  font-size: 1rem;
 }
 
 .interactive-layout {

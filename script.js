@@ -18,7 +18,7 @@ const capabilityNodes = {
   L4: {
     title: "L4 · Agentic Competence",
     description:
-      "Transforms perception, mapping, and simulation into executable behaviors via the Spatial Action Mapping (navigation, manipulation, open exploration).",
+      "Transforms perception, mapping, and simulation into executable behaviors via the Action Mapping (navigation, manipulation, open exploration).",
     examples: [
       "Tasks: goal-driven navigation, open-world self-goaling, gripper / push / grab primitives.",
       "Datasets & sources: SpatialPlus agentic traces, EmbodiedBench, SITE, SpatialViz."
@@ -38,8 +38,8 @@ const capabilityNodes = {
     description:
       "Builds persistent world models by aligning multi-view observations with memory retrieval and correspondence signals.",
     examples: [
-      "Tasks: perspective taking, relational grounding, long-horizon memory queries.",
-      "Datasets & sources: VSI-Bench, MMSI-Bench, SpatialPlus memory retrieval, Multi-SPA."
+      "Tasks: perspective taking, relational grounding, long-horizon memory queries and cognitive mapping.",
+      "Datasets & sources: VSI-Bench, MMSI-Bench, SpatialPlus memory retrieval, Multi-SPA, MindCube."
     ]
   },
   L1: {

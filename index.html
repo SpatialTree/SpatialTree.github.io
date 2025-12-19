@@ -133,12 +133,12 @@
               allowfullscreen></iframe>
           </div>
         </div>
-          <ul class="key-points"> 
+          <!-- <ul class="key-points"> 
             <li><strong>Cognitive Hierarchy:</strong> We structure spatial intelligence into a 4-level taxonomy (L1–L4) grounded in cognitive science, organizing 27 sub-abilities from foundational perception to agentic competence.</li> 
             <li><strong>SpatialTree-Bench:</strong> Moving beyond task-centric evaluation, we construct the first capability-centric benchmark populated by our Spatial Engine, enabling granular diagnosis of model capabilities and their interdependencies.</li> 
             <li><strong>Dependency & Transfer:</strong> Our analysis reveals that while L1 skills are largely orthogonal, they serve as critical prerequisites for high-level tasks. We find that while complex planning demands test-time compute, intuitive perception degrades with "over-thinking".</li> 
-            <!-- <li><strong>Auto-Think Strategy:</strong> We uncover a trade-off in RL where excessive reasoning hurts intuitive perception. We propose a hierarchy-aware "Auto-think" strategy that suppresses reasoning for low-level sensing while encouraging it for complex planning.</li>  -->
-          </ul>
+          </ul> -->
+          <!-- <li><strong>Auto-Think Strategy:</strong> We uncover a trade-off in RL where excessive reasoning hurts intuitive perception. We propose a hierarchy-aware "Auto-think" strategy that suppresses reasoning for low-level sensing while encouraging it for complex planning.</li>  -->
       </section>
 
       <section id="pillars" class="section pillars">
@@ -155,37 +155,40 @@
                 aria-label="SpatialTree capability hierarchy visualization"
               ></video>
             </div>
-            <h3>Capability Tree</h3>
-            <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p>
-            <ul class="pillar-list">
+            <h3>Cognitive Hierarchy</h3>
+            <!-- <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p> -->
+             <p>We structure spatial intelligence into a 4-level taxonomy (L1–L4) grounded in cognitive science, organizing 27 sub-abilities from foundational perception to agentic competence.</p>
+            <!-- <ul class="pillar-list">
               <li>L1–L4 with 27 atomic abilities.</li>
               <li>Weights guided by cognitive theory + correlations.</li>
               <li>Used for diagnostics and curriculum design.</li>
-            </ul>
+            </ul> -->
           </article>
           <article class="pillar-card">
             <div class="figure-frame">
-              <img src="assets/figures/spatial-engine.png" alt="SpatialEngine pipeline diagram" />
+              <img src="assets/instant.png" alt="SpatialEngine pipeline diagram" />
             </div>
-            <h3>SpatialEngine</h3>
-            <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
+            <h3>SpatialTreeEngine</h3>
+            <p>Moving beyond task-centric evaluation, we construct the first capability-centric benchmark populated by our Spatial Engine, enabling granular diagnosis of model capabilities and their interdependencies.</p>
+            <!-- <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
             <ul class="pillar-list">
               <li>12 perception pipelines → 24 workflows.</li>
               <li>Orientation, geometry, memory, action traces.</li>
               <li>Feeds benchmark + future training recipes.</li>
-            </ul>
+            </ul> -->
           </article>
           <article class="pillar-card">
             <div class="figure-frame">
               <img src="assets/figures/spatialtree-bench.png" alt="SpatialTree-Bench correlation heatmap" />
             </div>
-            <h3>SpatialTree-Bench</h3>
-            <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
+            <h3>Dependency & Transfer</h3>
+            <p>Our analysis reveals that while L1 skills are largely orthogonal, they serve as critical prerequisites for high-level tasks. We find that while complex planning demands test-time compute, intuitive perception degrades with "over-thinking".</p>
+            <!-- <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
             <ul class="pillar-list">
               <li>Closed/open + reasoning/non reasoning models.</li>
               <li>Classification, metric error, action success.</li>
               <li>Atomic prompting yields +5–22% navigation gains.</li>
-            </ul>
+            </ul> -->
           </article>
         </div>
       </section>
@@ -193,42 +196,7 @@
       <section id="tree" class="section taxonomy">
         <h2>Capability Tree</h2>
         <p>The SpatialTree taxonomy decomposes spatial intelligence into layered abilities so that perception atoms scaffold reasoning and agency.</p>
-        <table>
-          <thead>
-            <tr>
-              <th>Layer</th>
-              <th>Focus</th>
-              <th>Representative abilities</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>L4 · Agentic competence</td>
-              <td>Goal-conditioned behaviors</td>
-              <td>Navigation, manipulation primitives, spatial action mapping</td>
-            </tr>
-            <tr>
-              <td>L3 · Mental simulation</td>
-              <td>Internal rollouts &amp; planning</td>
-              <td>Causal reasoning, sequential planning, affordance forecasting</td>
-            </tr>
-            <tr>
-              <td>L2 · Mental mapping</td>
-              <td>Memory + multi-view grounding</td>
-              <td>Correspondence, perspective alignment, memory retrieval</td>
-            </tr>
-            <tr>
-              <td>L1 · Perception atoms</td>
-              <td>Metric &amp; relational sensing</td>
-              <td>Orientation, size/depth/distance, motion and 3D grounding</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-
-      <section id="interactive-tree" class="section interactive-tree">
-        <h2>Explore the Layers</h2>
-        <p>Click a layer to see its focus, representative abilities, and example tasks/datasets drawn from the paper.</p>
+        <p class="interaction-hint">Click a layer to see its focus, representative abilities.</p>
         <div class="interactive-layout">
           <div class="node-list">
             <button class="node-btn active" data-node="L4">L4 · Agentic Competence</button>
@@ -328,7 +296,7 @@
                 <td>37.8</td>
                 <td>33.5</td>
               </tr>
-              <tr class="model-closed">
+              <tr class="model-open">
                 <td title="GLM4.5V">GLM4.5V</td>
                 <td>36.0</td>
                 <td>35.0</td>
@@ -392,7 +360,7 @@
                 <td>32.4</td>
                 <td>27.8</td>
               </tr>
-              <tr class="model-closed">
+              <tr class="model-open">
                 <td title="Kimi-VL-A3B">Kimi-VL-A3B</td>
                 <td>24.4</td>
                 <td>20.3</td>
@@ -405,7 +373,7 @@
         </div>
         <div class="notes">
           <p>Hierarchy insight: L1 abilities are largely orthogonal, while L3 and L4 scores are strongly correlated.</p>
-          <p>Atomic prompting: Correspondence (+12.1%), depth (+22.1%), and size (+5.1%) cues improve navigation without retraining.</p>
+          <!-- <p>Atomic prompting: Correspondence (+12.1%), depth (+22.1%), and size (+5.1%) cues improve navigation without retraining.</p> -->
         </div>
       </section>
 
