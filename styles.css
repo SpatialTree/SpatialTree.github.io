@@ -238,14 +238,48 @@ main {
 }
 
 .overview-video-container {
-  margin: 1.5rem 0;
+  margin: 1.75rem 0 1.5rem;
   max-width: 56.25rem; /* 900px equivalent */
   margin-left: auto;
   margin-right: auto;
+  background-color: rgba(248, 249, 250, 1);
+  border-radius: 1.5rem;
+  border: 0.0625rem solid #e8eaed;
+  padding: 1.5rem 1.75rem 1.75rem;
 }
 
 .overview-video-container .youtube-container {
   box-shadow: var(--card-shadow);
+}
+
+.overview-video-container h2 {
+  margin-top: 0;
+}
+
+.overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.mute-button {
+  background-color: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.12);
+  font-size: 0.95rem;
+}
+
+.mute-button:hover {
+  background-color: #2d4ae6;
 }
 
 
