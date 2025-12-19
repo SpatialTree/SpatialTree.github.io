@@ -108,11 +108,19 @@
       <section id="overview" class="section">
         <h2>Overview</h2>
         <div class="tldr-box">
-          <p class="tldr">
-            <strong>TL;DR:</strong> SpatialTree introduces a four-layer capability taxonomy (L1–L4) for spatial intelligence in MLLMs, 
-            along with SpatialEngine (data generation) and SpatialTree-Bench (evaluation). Our benchmark shows that atomic 
-            prompting can improve navigation by up to +22% without retraining.
-          </p>
+          <div class="tldr-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="tldr-content">
+            <span class="tldr-label">TL;DR</span>
+            <p class="tldr-text">
+              We introduce <strong>SpatialTree</strong>, a cognitive-science-inspired framework that organizes spatial intelligence in MLLMs into a four-level hierarchy—ranging from <strong>L1 Perception</strong> to <strong>L4 Agentic Competence</strong>. By constructing the first capability-centric benchmark, we reveal that foundational skills are critical prerequisites for high-level reasoning. Finally, our <strong>'Auto-think' RL strategy</strong> optimizes spatial scaling by balancing intuitive perception with complex reasoning.
+            </p>
+          </div>
         </div>
         <div class="overview-video-container">
           <div class="youtube-container">
@@ -125,12 +133,12 @@
               allowfullscreen></iframe>
           </div>
         </div>
-        <ul class="key-points">
-          <li>27 atomic abilities arranged into L1–L4 with weights grounded in cognitive theory + empirical correlations.</li>
-          <li>12 perception pipelines rolled into 24 workflows that populate SpatialTree leaves with consistent metrics.</li>
-          <li>Benchmarking of 16 frontier MLLMs shows reasoning variants dominate L3 but remain bottlenecked on L4 execution.</li>
-          <li>Atomic prompting (size, depth, correspondence cues) delivers up to +22% navigation gains without retraining.</li>
-        </ul>
+          <ul class="key-points"> 
+            <li><strong>Cognitive Hierarchy:</strong> We structure spatial intelligence into a 4-level taxonomy (L1–L4) grounded in cognitive science, organizing 27 sub-abilities from foundational perception to agentic competence.</li> 
+            <li><strong>SpatialTree-Bench:</strong> Moving beyond task-centric evaluation, we construct the first capability-centric benchmark populated by our Spatial Engine, enabling granular diagnosis of model capabilities and their interdependencies.</li> 
+            <li><strong>Dependency & Transfer:</strong> Our analysis reveals that while L1 skills are largely orthogonal, they serve as critical prerequisites for high-level tasks. We find that while complex planning demands test-time compute, intuitive perception degrades with "over-thinking".</li> 
+            <!-- <li><strong>Auto-Think Strategy:</strong> We uncover a trade-off in RL where excessive reasoning hurts intuitive perception. We propose a hierarchy-aware "Auto-think" strategy that suppresses reasoning for low-level sensing while encouraging it for complex planning.</li>  -->
+          </ul>
       </section>
 
       <section id="pillars" class="section pillars">
