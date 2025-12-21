@@ -71,12 +71,39 @@ function updateNodeDetail(level) {
   });
 }
 
+// Map layer levels to video timestamps
+const layerToTime = {
+  L1: 0,
+  L2: 21,
+  L3: 61,
+  L4: 72
+};
+
 nodeButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     nodeButtons.forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
     const level = btn.getAttribute("data-node");
     updateNodeDetail(level);
+    
+    // Jump to corresponding video timestamp
+    if (overviewPlayer && ytPlayerReady && layerToTime[level] !== undefined) {
+      try {
+        overviewPlayer.seekTo(layerToTime[level], true);
+        overviewPlayer.playVideo();
+      } catch (e) {
+        console.error("Error seeking video:", e);
+      }
+    }
+    
+    // Update chapter button selection
+    const chapterButtons = document.querySelectorAll(".chapter-btn");
+    chapterButtons.forEach((cb) => {
+      if (cb.getAttribute("data-node") === level) {
+        chapterButtons.forEach((b) => b.classList.remove("selected"));
+        cb.classList.add("selected");
+      }
+    });
   });
 });
 
@@ -184,15 +211,26 @@ function setupChapterButtons() {
       }
       
       const time = parseFloat(newButton.getAttribute("data-time"));
-      console.log("Seeking to time:", time);
+      const nodeLevel = newButton.getAttribute("data-node");
+      console.log("Seeking to time:", time, "for level:", nodeLevel);
       
       try {
         overviewPlayer.seekTo(time, true);
         overviewPlayer.playVideo();
         
-        // Immediately update selected button
+        // Update chapter button selection
         chapterButtons.forEach((btn) => btn.classList.remove("selected"));
         newButton.classList.add("selected");
+        
+        // Update corresponding node button
+        if (nodeLevel) {
+          const nodeBtn = document.querySelector(`.node-btn[data-node="${nodeLevel}"]`);
+          if (nodeBtn) {
+            nodeButtons.forEach((b) => b.classList.remove("active"));
+            nodeBtn.classList.add("active");
+            updateNodeDetail(nodeLevel);
+          }
+        }
       } catch (e) {
         console.error("Error seeking video:", e);
       }
