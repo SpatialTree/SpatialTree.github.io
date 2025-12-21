@@ -3,7 +3,9 @@ const observer = new IntersectionObserver(
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add("visible");
-        observer.unobserve(entry.target);
+      } else {
+        // Remove visible class when leaving viewport to allow re-animation
+        entry.target.classList.remove("visible");
       }
     });
   },
@@ -12,7 +14,49 @@ const observer = new IntersectionObserver(
   }
 );
 
-document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+// Ensure DOM is ready before observing elements
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+  });
+} else {
+  // DOM already loaded
+  document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+}
+
+// Observer for transfer text animation (now uses reveal class, so handled by main observer)
+// Keeping this for backward compatibility if needed
+const transferObserver = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+      } else {
+        // Remove visible class when leaving viewport to allow re-animation
+        entry.target.classList.remove("visible");
+      }
+    });
+  },
+  {
+    threshold: 0.1,
+  }
+);
+
+// Observe transfer text when DOM is ready (as backup)
+function observeTransferText() {
+  const transferText = document.querySelector(".transfer-text");
+  if (transferText && !transferText.classList.contains("reveal")) {
+    // Only observe if it doesn't have reveal class (backward compatibility)
+    transferObserver.observe(transferText);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener("DOMContentLoaded", observeTransferText);
+} else {
+  // DOM already loaded
+  observeTransferText();
+}
 
 const capabilityNodes = {
   L4: {
