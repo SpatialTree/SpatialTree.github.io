@@ -858,3 +858,54 @@ table tr:last-child td {
 .authors .note {
   font-size: 0.9rem;
 }
+
+/* Column Expansion Styles */
+.col-l1-det, .col-l2-det, .col-l3-det, .col-l4-det {
+  display: none;
+}
+
+.col-l1-det { background-color: rgba(54, 85, 255, 0.03); }
+.col-l2-det { background-color: rgba(54, 85, 255, 0.03); }
+.col-l3-det { background-color: rgba(54, 85, 255, 0.03); }
+.col-l4-det { background-color: rgba(54, 85, 255, 0.03); }
+
+/* Expansion States */
+.benchmark table.expand-l1 .col-l1-sum { display: none; }
+.benchmark table.expand-l1 .col-l1-det { display: table-cell; }
+
+.benchmark table.expand-l2 .col-l2-sum { display: none; }
+.benchmark table.expand-l2 .col-l2-det { display: table-cell; }
+
+.benchmark table.expand-l3 .col-l3-sum { display: none; }
+.benchmark table.expand-l3 .col-l3-det { display: table-cell; }
+
+.benchmark table.expand-l4 .col-l4-sum { display: none; }
+.benchmark table.expand-l4 .col-l4-det { display: table-cell; }
+
+/* Header specific styling for details */
+th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Parent category label in expanded headers */
+.th-parent {
+  display: block;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  margin-bottom: 0.25rem;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+/* Add a top border to group the expanded columns visually */
+.benchmark table.expand-l1 th.col-l1-det,
+.benchmark table.expand-l2 th.col-l2-det,
+.benchmark table.expand-l3 th.col-l3-det,
+.benchmark table.expand-l4 th.col-l4-det {
+  border-top: 2px solid var(--accent);
+  background: rgba(54, 85, 255, 0.02);
+}

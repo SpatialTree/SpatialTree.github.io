@@ -83,3 +83,31 @@ nodeButtons.forEach((btn) => {
 // Ensure default detail matches initial active button
 updateNodeDetail("L4");
 
+
+// Table column expansion logic
+const table = document.querySelector('.benchmark table');
+if (table) {
+  const groups = ['l1', 'l2', 'l3', 'l4'];
+  
+  groups.forEach(group => {
+    const selector = `.col-${group}-sum, .col-${group}-det`;
+    const elements = table.querySelectorAll(selector);
+    let timer;
+
+    const expand = () => {
+      clearTimeout(timer);
+      table.classList.add(`expand-${group}`);
+    };
+
+    const collapse = () => {
+      timer = setTimeout(() => {
+        table.classList.remove(`expand-${group}`);
+      }, 100);
+    };
+
+    elements.forEach(el => {
+      el.addEventListener('mouseenter', expand);
+      el.addEventListener('mouseleave', collapse);
+    });
+  });
+}
