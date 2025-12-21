@@ -116,66 +116,118 @@ if (table) {
 let overviewPlayer;
 let ytPlayerReady = false;
 
-function onYouTubeIframeAPIReady() {
+// This function must be global for YouTube API to call it
+window.onYouTubeIframeAPIReady = function() {
   const playerEl = document.getElementById("overview-player");
-  if (!playerEl || typeof YT === "undefined" || !YT.Player) return;
+  if (!playerEl) {
+    console.error("Player element not found");
+    return;
+  }
+  
+  if (typeof YT === "undefined" || !YT.Player) {
+    console.error("YouTube API not loaded");
+    return;
+  }
 
-  overviewPlayer = new YT.Player("overview-player", {
-    events: {
-      onReady: (event) => {
-        ytPlayerReady = true;
-        // Set high quality if available
-        try {
-          event.target.setPlaybackQuality("hd1080");
-        } catch (e) {
-          console.log("YT quality setup error", e);
-        }
-        setupChapterButtons();
-      },
-      onStateChange: (event) => {
-        // Update active chapter based on current time
-        if (event.data === YT.PlayerState.PLAYING) {
-          updateActiveChapter();
+  try {
+    // Use existing iframe element
+    overviewPlayer = new YT.Player("overview-player", {
+      events: {
+        onReady: function(event) {
+          ytPlayerReady = true;
+          console.log("YouTube player ready");
+          // Set high quality if available
+          try {
+            event.target.setPlaybackQuality("hd1080");
+          } catch (e) {
+            console.log("YT quality setup error", e);
+          }
+          setupChapterButtons();
+        },
+        onStateChange: function(event) {
+          // Update active chapter based on current time
+          if (event.data === YT.PlayerState.PLAYING) {
+            updateActiveChapter();
+          }
+        },
+        onError: function(event) {
+          console.error("YouTube player error:", event.data);
         }
       }
-    }
-  });
-}
+    });
+  } catch (e) {
+    console.error("Error creating YouTube player:", e);
+  }
+};
 
 function setupChapterButtons() {
   const chapterButtons = document.querySelectorAll(".chapter-btn");
+  console.log("Setting up chapter buttons, found:", chapterButtons.length);
+  
   chapterButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      if (!ytPlayerReady || !overviewPlayer) return;
-      const time = parseFloat(button.getAttribute("data-time"));
-      overviewPlayer.seekTo(time, true);
-      overviewPlayer.playVideo();
+    // Remove any existing listeners
+    const newButton = button.cloneNode(true);
+    button.parentNode.replaceChild(newButton, button);
+    
+    newButton.addEventListener("click", function(e) {
+      e.preventDefault();
+      console.log("Chapter button clicked");
+      
+      if (!ytPlayerReady) {
+        console.error("Player not ready yet");
+        return;
+      }
+      
+      if (!overviewPlayer) {
+        console.error("Player not initialized");
+        return;
+      }
+      
+      const time = parseFloat(newButton.getAttribute("data-time"));
+      console.log("Seeking to time:", time);
+      
+      try {
+        overviewPlayer.seekTo(time, true);
+        overviewPlayer.playVideo();
+        
+        // Immediately update selected button
+        chapterButtons.forEach((btn) => btn.classList.remove("selected"));
+        newButton.classList.add("selected");
+      } catch (e) {
+        console.error("Error seeking video:", e);
+      }
     });
   });
 }
 
 function updateActiveChapter() {
-  if (!overviewPlayer || typeof overviewPlayer.getCurrentTime !== "function") return;
+  if (!overviewPlayer || !ytPlayerReady) return;
   
-  const currentTime = overviewPlayer.getCurrentTime();
-  const chapterButtons = document.querySelectorAll(".chapter-btn");
-  let activeChapter = null;
-  
-  chapterButtons.forEach((btn) => {
-    btn.classList.remove("selected");
-    const time = parseFloat(btn.getAttribute("data-time"));
-    if (currentTime >= time) {
-      activeChapter = btn;
+  try {
+    if (typeof overviewPlayer.getCurrentTime !== "function") return;
+    
+    const currentTime = overviewPlayer.getCurrentTime();
+    const chapterButtons = document.querySelectorAll(".chapter-btn");
+    let activeChapter = null;
+    
+    chapterButtons.forEach((btn) => {
+      btn.classList.remove("selected");
+      const time = parseFloat(btn.getAttribute("data-time"));
+      if (currentTime >= time) {
+        activeChapter = btn;
+      }
+    });
+    
+    if (activeChapter) {
+      activeChapter.classList.add("selected");
     }
-  });
-  
-  if (activeChapter) {
-    activeChapter.classList.add("selected");
+  } catch (e) {
+    // Ignore errors
   }
 }
 
 // Update active chapter periodically when playing
-setInterval(() => {
+setInterval(function() {
   if (overviewPlayer && ytPlayerReady) {
     try {
       const state = overviewPlayer.getPlayerState();
@@ -187,3 +239,16 @@ setInterval(() => {
     }
   }
 }, 500);
+
+// Fallback: if API loads after DOM is ready, try to initialize
+document.addEventListener("DOMContentLoaded", function() {
+  // Check if API is already loaded
+  if (typeof YT !== "undefined" && YT.Player && typeof window.onYouTubeIframeAPIReady === "function") {
+    // Small delay to ensure iframe is ready
+    setTimeout(function() {
+      if (!ytPlayerReady) {
+        window.onYouTubeIframeAPIReady();
+      }
+    }, 1000);
+  }
+});
