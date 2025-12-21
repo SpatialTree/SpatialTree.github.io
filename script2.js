@@ -111,3 +111,79 @@ if (table) {
     });
   });
 }
+
+// YouTube Player API for chapter navigation
+let overviewPlayer;
+let ytPlayerReady = false;
+
+function onYouTubeIframeAPIReady() {
+  const playerEl = document.getElementById("overview-player");
+  if (!playerEl || typeof YT === "undefined" || !YT.Player) return;
+
+  overviewPlayer = new YT.Player("overview-player", {
+    events: {
+      onReady: (event) => {
+        ytPlayerReady = true;
+        // Set high quality if available
+        try {
+          event.target.setPlaybackQuality("hd1080");
+        } catch (e) {
+          console.log("YT quality setup error", e);
+        }
+        setupChapterButtons();
+      },
+      onStateChange: (event) => {
+        // Update active chapter based on current time
+        if (event.data === YT.PlayerState.PLAYING) {
+          updateActiveChapter();
+        }
+      }
+    }
+  });
+}
+
+function setupChapterButtons() {
+  const chapterButtons = document.querySelectorAll(".chapter-btn");
+  chapterButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      if (!ytPlayerReady || !overviewPlayer) return;
+      const time = parseFloat(button.getAttribute("data-time"));
+      overviewPlayer.seekTo(time, true);
+      overviewPlayer.playVideo();
+    });
+  });
+}
+
+function updateActiveChapter() {
+  if (!overviewPlayer || typeof overviewPlayer.getCurrentTime !== "function") return;
+  
+  const currentTime = overviewPlayer.getCurrentTime();
+  const chapterButtons = document.querySelectorAll(".chapter-btn");
+  let activeChapter = null;
+  
+  chapterButtons.forEach((btn) => {
+    btn.classList.remove("selected");
+    const time = parseFloat(btn.getAttribute("data-time"));
+    if (currentTime >= time) {
+      activeChapter = btn;
+    }
+  });
+  
+  if (activeChapter) {
+    activeChapter.classList.add("selected");
+  }
+}
+
+// Update active chapter periodically when playing
+setInterval(() => {
+  if (overviewPlayer && ytPlayerReady) {
+    try {
+      const state = overviewPlayer.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        updateActiveChapter();
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+}, 500);
