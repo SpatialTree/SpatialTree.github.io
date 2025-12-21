@@ -79,6 +79,17 @@ const layerToTime = {
   L4: 72
 };
 
+// Map layer levels to end timestamps (stop before next section)
+const layerToEndTime = {
+  L1: 21,
+  L2: 61,
+  L3: 72,
+  L4: null // Play to end for L4
+};
+
+let currentLevelEndTime = null;
+let timeCheckInterval = null;
+
 nodeButtons.forEach((btn) => {
   btn.addEventListener("click", () => {
     nodeButtons.forEach((b) => b.classList.remove("active"));
@@ -86,11 +97,17 @@ nodeButtons.forEach((btn) => {
     const level = btn.getAttribute("data-node");
     updateNodeDetail(level);
     
-    // Jump to corresponding video timestamp
+    // Jump to corresponding video timestamp and set end time
     if (overviewPlayer && ytPlayerReady && layerToTime[level] !== undefined) {
       try {
-        overviewPlayer.seekTo(layerToTime[level], true);
+        const startTime = layerToTime[level];
+        currentLevelEndTime = layerToEndTime[level];
+        
+        overviewPlayer.seekTo(startTime, true);
         overviewPlayer.playVideo();
+        
+        // Start monitoring playback time
+        startTimeMonitoring();
       } catch (e) {
         console.error("Error seeking video:", e);
       }
@@ -143,6 +160,42 @@ if (table) {
 let overviewPlayer;
 let ytPlayerReady = false;
 
+// Function to monitor video time and pause at end of section
+function startTimeMonitoring() {
+  // Clear existing interval
+  if (timeCheckInterval) {
+    clearInterval(timeCheckInterval);
+  }
+  
+  timeCheckInterval = setInterval(function() {
+    if (!overviewPlayer || !ytPlayerReady || !currentLevelEndTime) return;
+    
+    try {
+      const state = overviewPlayer.getPlayerState();
+      if (state === YT.PlayerState.PLAYING) {
+        const currentTime = overviewPlayer.getCurrentTime();
+        
+        // If reached end time, pause video
+        if (currentTime >= currentLevelEndTime) {
+          overviewPlayer.pauseVideo();
+          clearInterval(timeCheckInterval);
+          timeCheckInterval = null;
+        }
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }, 100); // Check every 100ms
+}
+
+function stopTimeMonitoring() {
+  if (timeCheckInterval) {
+    clearInterval(timeCheckInterval);
+    timeCheckInterval = null;
+  }
+  currentLevelEndTime = null;
+}
+
 // This function must be global for YouTube API to call it
 window.onYouTubeIframeAPIReady = function() {
   const playerEl = document.getElementById("overview-player");
@@ -175,6 +228,9 @@ window.onYouTubeIframeAPIReady = function() {
           // Update active chapter based on current time
           if (event.data === YT.PlayerState.PLAYING) {
             updateActiveChapter();
+          } else if (event.data === YT.PlayerState.PAUSED) {
+            // Stop monitoring when paused
+            stopTimeMonitoring();
           }
         },
         onError: function(event) {
@@ -215,8 +271,14 @@ function setupChapterButtons() {
       console.log("Seeking to time:", time, "for level:", nodeLevel);
       
       try {
-        overviewPlayer.seekTo(time, true);
+        const startTime = parseFloat(newButton.getAttribute("data-time"));
+        currentLevelEndTime = layerToEndTime[nodeLevel] || null;
+        
+        overviewPlayer.seekTo(startTime, true);
         overviewPlayer.playVideo();
+        
+        // Start monitoring playback time
+        startTimeMonitoring();
         
         // Update chapter button selection
         chapterButtons.forEach((btn) => btn.classList.remove("selected"));

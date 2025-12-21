@@ -844,6 +844,11 @@ table tr:last-child td {
   margin-top: 0;
 }
 
+.citation p {
+  color: var(--muted);
+  margin-bottom: 1rem;
+}
+
 .bibtex-entry {
   font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
   font-size: 0.95rem;
