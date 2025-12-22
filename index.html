@@ -196,9 +196,25 @@
         </div>
         <div class="video-gallery-container">
           <h3>Data Samples</h3>
-          <div class="gallery-video-wrapper">
-            <video id="gallery-video" src="assets/figures/demo_video_L4.mp4" controls autoplay muted loop playsinline></video>
+          <div class="gallery-carousel-container">
+            <div class="gallery-nav-overlay left"></div>
+            <div class="gallery-carousel-track">
+              <!-- Items will be injected by JS -->
+            </div>
+            <div class="gallery-nav-overlay right"></div>
+            
+            <button class="nav-btn prev-btn" aria-label="Previous sample">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <button class="nav-btn next-btn" aria-label="Next sample">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
           </div>
+          
           <div class="gallery-controls">
             <button class="gallery-btn active" data-video="L4">L4 Agentic Competence</button>
             <button class="gallery-btn" data-video="L3">L3 Mental Simulation</button>

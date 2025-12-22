@@ -370,29 +370,156 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Video Gallery Logic
 document.addEventListener('DOMContentLoaded', function() {
-  const galleryVideo = document.getElementById('gallery-video');
+  const galleryContainer = document.querySelector('.gallery-carousel-track');
   const galleryBtns = document.querySelectorAll('.gallery-btn');
+  const prevBtn = document.querySelector('.prev-btn');
+  const nextBtn = document.querySelector('.next-btn');
   
-  if (galleryVideo && galleryBtns.length > 0) {
+  // Define video lists for each level (excluding non-suffixed versions)
+  const galleryData = {
+    L4: [
+      "demo_video_L4_1.mp4",
+      "demo_video_L4_2.mp4"
+    ],
+    L3: [
+      "demo_video_L3_1.mp4",
+      "demo_video_L3_2.mp4"
+    ],
+    L2: [
+      "demo_video_L2_1.mp4",
+      "demo_video_L2_2.mp4",
+      "demo_video_L2_3.mp4",
+      "demo_video_L2_4.mp4"
+    ],
+    L1: [
+      "demo_video_L1_1.mp4",
+      "demo_video_L1_2.mp4",
+      "demo_video_L1_3.mp4",
+      "demo_video_L1_4.mp4",
+      "demo_video_L1_5.mp4",
+      "demo_video_L1_6.mp4"
+    ]
+  };
+
+  let currentLevel = 'L4';
+  let currentIndex = 0;
+  let items = [];
+
+  function initCarousel(level) {
+    if (!galleryContainer) return;
+    
+    // Clear existing items
+    galleryContainer.innerHTML = '';
+    items = [];
+    currentLevel = level;
+    currentIndex = 0;
+    
+    let videos = galleryData[level];
+    
+    // Duplicate videos if only 2 to ensure loop effect (left/right preview)
+    if (videos && videos.length === 2) {
+      videos = [...videos, ...videos];
+    }
+    
+    // Create DOM elements for all videos in this level
+    videos.forEach((videoFile, index) => {
+      const item = document.createElement('div');
+      item.className = 'carousel-item';
+      
+      const video = document.createElement('video');
+      video.src = `assets/figures/${videoFile}`;
+      video.muted = true;
+      video.loop = false;
+      video.playsInline = true;
+      video.setAttribute('playsinline', '');
+      
+      item.appendChild(video);
+      galleryContainer.appendChild(item);
+      items.push(item);
+      
+      // Add click listener to item to make it active if clicked
+      item.addEventListener('click', () => {
+        if (currentIndex !== index) {
+          updateCarousel(index);
+        }
+      });
+    });
+    
+    updateCarousel(0);
+  }
+
+  function updateCarousel(index) {
+    if (items.length === 0) return;
+    
+    // Wrap index
+    if (index < 0) index = items.length - 1;
+    if (index >= items.length) index = 0;
+    
+    currentIndex = index;
+    
+    items.forEach((item, i) => {
+      item.className = 'carousel-item'; // Reset classes
+      const video = item.querySelector('video');
+      
+      // Determine relative position
+      // We need to handle wrapping for prev/next logic visually
+      let diff = i - currentIndex;
+      
+      // Adjust diff for wrapping to find shortest path
+      const total = items.length;
+      if (diff > total / 2) diff -= total;
+      if (diff < -total / 2) diff += total;
+      
+      if (i === currentIndex) {
+        item.classList.add('active');
+        video.play().catch(e => {});
+        video.controls = true; // Show controls only on active
+      } else {
+        video.pause();
+        video.currentTime = 0; // Reset time
+        video.controls = false;
+        
+        if (diff === -1) {
+           item.classList.add('prev');
+        } else if (diff === 1) {
+           item.classList.add('next');
+        } else {
+           item.classList.add('hidden');
+        }
+      }
+    });
+  }
+
+  if (galleryContainer && galleryBtns.length > 0) {
+    // Initialize with default level
+    initCarousel('L4');
+
+    // Category buttons
     galleryBtns.forEach(btn => {
       btn.addEventListener('click', function() {
+        if (this.classList.contains('active')) return;
+        
         // Update active state
         galleryBtns.forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         
-        // Update video source
+        // Switch level
         const level = this.getAttribute('data-video');
-        const videoSrc = `assets/figures/demo_video_${level}.mp4`;
-        
-        // Smooth transition
-        galleryVideo.style.opacity = '0.5';
-        
-        setTimeout(() => {
-          galleryVideo.src = videoSrc;
-          galleryVideo.play().catch(e => console.log('Auto-play prevented:', e));
-          galleryVideo.style.opacity = '1';
-        }, 200);
+        initCarousel(level);
       });
     });
+
+    // Navigation buttons
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        updateCarousel(currentIndex - 1);
+      });
+    }
+
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        updateCarousel(currentIndex + 1);
+      });
+    }
   }
 });
