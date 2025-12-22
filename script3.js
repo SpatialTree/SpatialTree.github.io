@@ -623,6 +623,21 @@ function initChart() {
 
   sunburstChart = echarts.init(chartDom);
   
+  // Calculate responsive font sizes based on container width
+  // Base size is 600px, scale proportionally
+  const containerWidth = chartDom.clientWidth || 600;
+  const baseWidth = 600;
+  const scaleFactor = containerWidth / baseWidth;
+  
+  // Clamp scale factor to reasonable bounds (0.5x to 1.5x)
+  const clampedScale = Math.max(0.5, Math.min(1.5, scaleFactor));
+  
+  // Calculate responsive font sizes
+  const innerFontSize = Math.round(11 * clampedScale);
+  const innerLineHeight = Math.round(13 * clampedScale);
+  const outerFontSize = Math.round(10 * clampedScale);
+  const labelPush = Math.round(24 * clampedScale);
+  
   const data = [
     {
       name: 'L1 Perception',
@@ -722,7 +737,8 @@ function initChart() {
         const len = Math.hypot(vx, vy) || 1;
 
         // Positive means "away from center". Keep it very subtle.
-        const push = 24;
+        // Use responsive push distance based on container size
+        const push = labelPush;
         return {
           dx: (vx / len) * push,
           dy: (vy / len) * push
@@ -761,8 +777,8 @@ function initChart() {
             position: 'inside',
             color: '#fff',
             fontWeight: 'bold',
-            fontSize: 11,
-            lineHeight: 13,
+            fontSize: innerFontSize,
+            lineHeight: innerLineHeight,
             overflow: 'break',
             formatter: function(params) {
               // Abbreviate inner-ring labels to avoid overflow.
@@ -788,7 +804,7 @@ function initChart() {
             rotate: 'radial',
             align: 'center',
             color: '#1c1b1bff',
-            fontSize: 10,
+            fontSize: outerFontSize,
             minAngle: 7
           },
         }
@@ -809,6 +825,27 @@ function initChart() {
       chartDom.style.height = width + 'px';
     }
     if (sunburstChart) {
+      // Recalculate font sizes on resize
+      const baseWidth = 600;
+      const scaleFactor = width / baseWidth;
+      const clampedScale = Math.max(0.5, Math.min(1.5, scaleFactor));
+      
+      const newInnerFontSize = Math.round(11 * clampedScale);
+      const newInnerLineHeight = Math.round(13 * clampedScale);
+      const newOuterFontSize = Math.round(10 * clampedScale);
+      
+      // Update font sizes in the chart option
+      if (sunburstOption && sunburstOption.series && sunburstOption.series.levels) {
+        if (sunburstOption.series.levels[1] && sunburstOption.series.levels[1].label) {
+          sunburstOption.series.levels[1].label.fontSize = newInnerFontSize;
+          sunburstOption.series.levels[1].label.lineHeight = newInnerLineHeight;
+        }
+        if (sunburstOption.series.levels[2] && sunburstOption.series.levels[2].label) {
+          sunburstOption.series.levels[2].label.fontSize = newOuterFontSize;
+        }
+        sunburstChart.setOption(sunburstOption, { notMerge: false });
+      }
+      
       sunburstChart.resize();
     }
   }
