@@ -1753,6 +1753,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
 @media (max-width: 768px) {
   .gallery-carousel-container {
     height: 16rem;
+    margin-bottom: 2rem;
   }
   
   .carousel-item {
@@ -1768,6 +1769,10 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   .nav-btn {
     width: 2.5rem;
     height: 2.5rem;
+  }
+  
+  .gallery-controls {
+    margin-top: 3rem;
   }
 }
 
