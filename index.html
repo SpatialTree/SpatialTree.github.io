@@ -117,16 +117,10 @@
           <div class="tldr-content">
             <span class="tldr-label">TL;DR</span>
             <p class="tldr-text">
-              We introduce <strong>SpatialTree</strong>, a cognitive-science-inspired framework that organizes spatial intelligence in MLLMs into a four-level hierarchy—ranging from <strong>L1 Perception</strong> to <strong>L4 Agentic Competence</strong>. By constructing the first capability-centric benchmark, we reveal that foundational skills are critical prerequisites for high-level reasoning. Finally, our <strong>'Auto-think' RL strategy</strong> optimizes spatial scaling by balancing intuitive perception with complex reasoning.
+              We propose <strong>SpatialTree</strong>, a <strong>cognitive-science-inspired <span class="highlight-taxonomy">taxonomy</span></strong> of spatial intelligence in multimodal large language models(MLLMs), along with <strong>SpatialTree-<span class="highlight-bench">Bench</span></strong> and a <strong>proof-of-concept <span class="highlight-study">study</span></strong> on improving spatial abilities.
             </p>
           </div>
         </div>
-          <!-- <ul class="key-points"> 
-            <li><strong>Cognitive Hierarchy:</strong> We structure spatial intelligence into a 4-level taxonomy (L1–L4) grounded in cognitive science, organizing 27 sub-abilities from foundational perception to agentic competence.</li> 
-            <li><strong>SpatialTree-Bench:</strong> Moving beyond task-centric evaluation, we construct the first capability-centric benchmark populated by our Spatial Engine, enabling granular diagnosis of model capabilities and their interdependencies.</li> 
-            <li><strong>Dependency & Transfer:</strong> Our analysis reveals that while L1 skills are largely orthogonal, they serve as critical prerequisites for high-level tasks. We find that while complex planning demands test-time compute, intuitive perception degrades with "over-thinking".</li> 
-          </ul> -->
-          <!-- <li><strong>Auto-Think Strategy:</strong> We uncover a trade-off in RL where excessive reasoning hurts intuitive perception. We propose a hierarchy-aware "Auto-think" strategy that suppresses reasoning for low-level sensing while encouraging it for complex planning.</li>  -->
         <div class="pillars-grid">
           <article class="pillar-card">
             <div class="figure-frame">
@@ -141,7 +135,7 @@
             </div>
             <h3>Cognitive Hierarchy</h3>
             <!-- <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p> -->
-             <p>We structure spatial intelligence into a 4-level taxonomy (L1–L4) grounded in cognitive science, organizing 27 sub-abilities from foundational perception to agentic competence.</p>
+             <p>We structure spatial intelligence into a 4-level taxonomy (L1–L4), organizing <span class="highlight-taxonomy"></span>27 sub-abilities</span> from foundational perception to agentic competence.</p>
             <!-- <ul class="pillar-list">
               <li>L1–L4 with 27 atomic abilities.</li>
               <li>Weights guided by cognitive theory + correlations.</li>
@@ -152,8 +146,8 @@
             <div class="figure-frame">
               <img src="assets/instant.png" alt="SpatialEngine pipeline diagram" />
             </div>
-            <h3>SpatialTreeEngine</h3>
-            <p>Moving beyond task-centric evaluation, we construct the first capability-centric benchmark populated by our Spatial Engine, enabling granular diagnosis of model capabilities and their interdependencies.</p>
+            <h3>Engine&Bench</h3>
+            <p>We instantiate the taxonomy into <span class="highlight-bench">SpatialTree-Bench</span> with <span class="highlight-engine">SpatialTree-Engine</span>.</p>
             <!-- <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
             <ul class="pillar-list">
               <li>12 perception pipelines → 24 workflows.</li>
@@ -165,8 +159,8 @@
             <div class="figure-frame">
               <img src="assets/figures/spatialtree-bench.png" alt="SpatialTree-Bench correlation heatmap" />
             </div>
-            <h3>Dependency & Transfer</h3>
-            <p>Our analysis reveals that while L1 skills are largely orthogonal, they serve as critical prerequisites for high-level tasks. We find that while complex planning demands test-time compute, intuitive perception degrades with "over-thinking".</p>
+            <h3>Abilitiy Study</h3>
+            <p>We study the ability dependencies, and study how them transfer and improve with supervised fine-tuning (SFT) and Reinforcement Learning (RL).</p>
             <!-- <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
             <ul class="pillar-list">
               <li>Closed/open + reasoning/non reasoning models.</li>
