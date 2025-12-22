@@ -63,37 +63,25 @@ const capabilityNodes = {
     title: "L4 · Agentic Competence",
     description:
       "Aligned with the formal operational stage, this level represents the ultimate integration of perception, understanding, and reasoning. It executes coherent actions, interprets feedback, and self-corrects to accomplish long-horizon tasks in the space.",
-    examples: [
-      "Tasks: goal-driven navigation, open-world self-goaling, gripper / push / grab primitives.",
-      "Datasets & sources: SpatialPlus agentic traces, EmbodiedBench, SITE, SpatialViz."
-    ]
+    examples: []
   },
   L3: {
     title: "L3 · Mental Simulation",
     description:
       "Reflecting the concrete operational stage, this level progresses to leverage complex textual logic to reason about spatial-temporal causality and perform planning for multi-step operations.",
-    examples: [
-      "Tasks: multi-step route planning, what-if reasoning about dynamics, affordance QA.",
-      "Datasets & sources: SpatialViz reasoning splits, SITE, MMSI-Bench, Omnispatial."
-    ]
+    examples: []
   },
   L2: {
     title: "L2 · Mental Mapping",
     description:
       "Corresponding to the pre-operational stage, this level begins to establish the mapping from raw perception to semantic concepts, focusing on aligning space with language semantics and language-structured memory.",
-    examples: [
-      "Tasks: perspective taking, relational grounding, long-horizon memory queries and cognitive mapping.",
-      "Datasets & sources: VSI-Bench, MMSI-Bench, SpatialPlus memory retrieval, Multi-SPA, MindCube."
-    ]
+    examples: []
   },
   L1: {
     title: "L1 · Perception Atoms",
     description:
       "Mirroring the sensorimotor stage, this level focuses on raw geometric and physical attributes, which aligns with pre-linguistic early human perception.",
-    examples: [
-      "Tasks: size/depth/distance estimation, orientation, motion tracking, 3D grounding.",
-      "Datasets & sources: SpatialPlus orientation/geometry, 3DSR-Bench, BLINK, LLaVA-3D extras."
-    ]
+    examples: []
   }
 };
 
@@ -108,11 +96,13 @@ function updateNodeDetail(level) {
   nodeTitle.textContent = data.title;
   nodeDescription.textContent = data.description;
   nodeExamples.innerHTML = "";
-  data.examples.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    nodeExamples.appendChild(li);
-  });
+  if (data.examples && data.examples.length > 0) {
+    data.examples.forEach((item) => {
+      const li = document.createElement("li");
+      li.textContent = item;
+      nodeExamples.appendChild(li);
+    });
+  }
 }
 
 // Map layer levels to video timestamps
