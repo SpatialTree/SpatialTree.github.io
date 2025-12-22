@@ -1615,8 +1615,8 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   width: 100%;
   max-width: 64rem;
   margin: 0 auto;
-  margin-bottom: clamp(1.5rem, 2.5vw, 2.5rem);
-  height: 24rem; /* Fixed height to contain absolute items */
+  margin-bottom: 2.5rem;
+  height: clamp(12rem, 30vw, 24rem); /* Responsive height that scales with viewport */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1723,7 +1723,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: clamp(2.5rem, 4.5vw, 4.5rem);
+  margin-top: 4.5rem;
 }
 
 .gallery-btn {
@@ -1753,7 +1753,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
 
 @media (max-width: 768px) {
   .gallery-carousel-container {
-    height: 16rem;
+    height: clamp(10rem, 25vw, 16rem);
   }
   
   .carousel-item {
