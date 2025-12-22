@@ -40,7 +40,7 @@
         <a href="#overview">Overview</a>
         <a href="#tree">Cognitive Hierarchy</a>
         <a href="#benchmark">SpatialTree-Bench</a>
-        <a href="#transfer">Ability Acquisition</a>
+        <a href="#transfer">Ability Study</a>
         <!-- <a href="#authors">Authors</a> -->
         <a href="#citation">Citation</a>
       </nav>
@@ -49,7 +49,7 @@
     <section class="hero">
       <div class="hero-grid">
         <div class="hero-text">
-          <p class="eyebrow">taxonomy · benchmark · Ability Acquisition</p>
+          <p class="eyebrow">taxonomy · benchmark · Ability Study</p>
           <h1 class="hero-title">
             <!-- <span class="title-brand" aria-hidden="true">SpatialTree</span> -->
             <span class="nowrap"><span class="artistic-brand">SpatialTree :</span>  How Spatial Abilities</span><br />Branch Out in MLLMs</span>
@@ -170,12 +170,21 @@
           </div>
         </div>
         <div class="takeaways-box reveal">
-          <div class="takeaways-header">Takeaways</div>
-          <ul class="takeaways-list">
-            <li>Low-level abilities are relatively orthogonal, whereas higher-level abilities are increasingly compositional and coupled.</li>
-            <li>Exhaustive supervised fine-tuning (SFT) at all perception abilities can induce max cross-level improvements, benefiting higher-level spatial abilities.</li>
-            <li>Post-training with RLVR should be applied across all ability levels, encouraging explicit reasoning at higher levels while suppressing it for low-level perceptual skills.</li>
+          <div class="takeaways-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="takeaways-content">
+            <span class="takeaways-label">Takeaways</span>
+            <ul class="takeaways-list">
+              <li><strong>Dependencies Structure</strong>: Low-level abilities are relatively orthogonal, whereas higher-level abilities are increasingly compositional and coupled.</li>
+              <li><strong>Ability Acquisition</strong>: Exhaustive supervised fine-tuning (SFT) over a broad range of low-level perceptual data can maximize cross-level transfer, benefiting higher-level spatial abilities.</li>
+              <li><strong>Auto-thinking</strong>: Post-training with RLVR should be applied across all ability levels, encouraging explicit reasoning at higher levels while suppressing it for low-level perceptual skills.</li>
         </ul>
+          </div>
         </div>
         <!-- <div class="pillars-grid">
           <article class="pillar-card">
@@ -380,7 +389,7 @@
       </section>
 
       <section id="transfer" class="section">
-        <h2>Ability Acquisition</h2>
+        <h2>Ability Study</h2>
         <div class="transfer-layout">
           <div class="transfer-image">
             <img src="assets/figures/spatialtree-bench.png" alt="Dependency visualization" />

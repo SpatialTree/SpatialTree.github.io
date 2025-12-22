@@ -499,22 +499,38 @@ main {
   margin: 0 0 2.5rem;
   padding: 1.25rem 1.5rem;
   border-radius: 1rem;
-  border: 1px solid rgba(20, 30, 60, 0.06);
-  background: radial-gradient(circle at top left, rgba(54, 85, 255, 0.06), transparent 55%),
-    #f8fafc;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  background: radial-gradient(circle at 18% 20%, rgba(245, 158, 11, 0.1), transparent 60%),
+    #fffaf3;
+  box-shadow: 0 18px 40px rgba(245, 158, 11, 0.08);
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 0.45s cubic-bezier(0.16, 0.84, 0.44, 1), transform 0.45s cubic-bezier(0.16, 0.84, 0.44, 1);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
 }
 
-.takeaways-header {
-  font-size: 0.8rem;
+.takeaways-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: #c97b00;
+  margin-top: 0.15rem;
+}
+
+.takeaways-content {
+  flex: 1;
+}
+
+.takeaways-label {
+  display: block;
+  font-size: 0.75rem;
   font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text);
-  margin-bottom: 0.65rem;
+  letter-spacing: 0.05em;
+  color: #c97b00;
+  margin-bottom: 0.4rem;
 }
 
 .takeaways-list {
