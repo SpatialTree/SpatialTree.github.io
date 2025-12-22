@@ -40,7 +40,7 @@
         <a href="#overview">Overview</a>
         <a href="#tree">Cognitive Hierarchy</a>
         <a href="#benchmark">SpatialTree-Bench</a>
-        <a href="#transfer">Ability Acquisition</a>
+        <a href="#transfer">Ability Study</a>
         <!-- <a href="#authors">Authors</a> -->
         <a href="#citation">Citation</a>
       </nav>
@@ -49,7 +49,7 @@
     <section class="hero">
       <div class="hero-grid">
         <div class="hero-text">
-          <p class="eyebrow">taxonomy · benchmark · Ability Acquisition</p>
+          <p class="eyebrow">taxonomy · benchmark · Ability Study</p>
           <h1 class="hero-title">
             <!-- <span class="title-brand" aria-hidden="true">SpatialTree</span> -->
             <span class="nowrap"><span class="artistic-brand">SpatialTree :</span>  How Spatial Abilities</span><br />Branch Out in MLLMs</span>
@@ -104,6 +104,54 @@
     </section>
 
     <main>
+      <section id="motivation" class="section motivation">
+        <h2>How does spatial intelligence emerge?</h2>
+        <div class="motivation-inner">
+          <div class="motivation-timeline reveal" aria-label="Spatial ability development from L1 to L4">
+            <div class="motivation-timeline-item">
+              <img src="assets/figures/L1.png" alt="L1: low-level perception" />
+              <p class="motivation-timeline-label">L1 Perception</p>
+            </div>
+            <div class="motivation-timeline-item">
+              <img src="assets/figures/L2.png" alt="L2: mental mapping" />
+              <p class="motivation-timeline-label">L2 Mental Mapping</p>
+            </div>
+            <div class="motivation-timeline-item">
+              <img src="assets/figures/L3.png" alt="L3: mental simulation" />
+              <p class="motivation-timeline-label">L3 Mental Simulation</p>
+            </div>
+            <div class="motivation-timeline-item">
+              <img src="assets/figures/L4.png" alt="L4: agentic competence" />
+              <p class="motivation-timeline-label">L4 Spatial Agent</p>
+            </div>
+          </div>
+          <div class="motivation-axis reveal" aria-hidden="true">
+            <div class="motivation-axis-line"></div>
+            <div class="motivation-axis-arrow"></div>
+          </div>
+          <div class="motivation-phase-cards reveal" aria-hidden="true">
+            <div class="motivation-phase-card">
+              <p class="motivation-phase-title motivation-phase-title-l1">Native perception</p>
+              <p class="motivation-phase-text">Native perception of space.</p>
+            </div>
+            <div class="motivation-phase-card">
+              <p class="motivation-phase-title motivation-phase-title-l2">Language</p>
+              <p class="motivation-phase-text">Mapping spatial concepts to language.</p>
+            </div>
+            <div class="motivation-phase-card">
+              <p class="motivation-phase-title motivation-phase-title-l3">Thinking</p>
+              <p class="motivation-phase-text">Thinking about space in the mind.</p>
+            </div>
+            <div class="motivation-phase-card">
+              <p class="motivation-phase-title motivation-phase-title-l4">Actions</p>
+              <p class="motivation-phase-text">Executing actions in space.</p>
+            </div>
+          </div>
+          <p class="motivation-quote">“Each stage builds on the stage before it.”</p>
+          <p class="motivation-attrib">— Jean Piaget’s cognitive development theory</p>
+        </div>
+      </section>
+
       <section id="overview" class="section">
         <h2>Overview</h2>
         <div class="tldr-box">
@@ -121,7 +169,24 @@
             </p>
           </div>
         </div>
-        <div class="pillars-grid">
+        <div class="takeaways-box reveal">
+          <div class="takeaways-icon" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="takeaways-content">
+            <span class="takeaways-label">Takeaways</span>
+            <ul class="takeaways-list">
+              <li><strong>Dependencies Structure</strong>: Low-level abilities are relatively orthogonal, whereas higher-level abilities are increasingly compositional and coupled.</li>
+              <li><strong>Ability Acquisition</strong>: Exhaustive supervised fine-tuning (SFT) over a broad range of low-level perceptual data can maximize cross-level transfer, benefiting higher-level spatial abilities.</li>
+              <li><strong>Auto-thinking</strong>: Naive post-training with RLVR does not work; explicitly encouraging reasoning at higher levels while suppressing it for low-level perceptual skills makes broad improvements.</li>
+        </ul>
+          </div>
+        </div>
+        <!-- <div class="pillars-grid">
           <article class="pillar-card">
             <div class="figure-frame">
               <video
@@ -134,41 +199,20 @@
               ></video>
             </div>
             <h3>Cognitive Hierarchy</h3>
-            <!-- <p>Four dependent layers that expose how perception atoms compose into agentic behaviors.</p> -->
-             <!-- <p>We structure spatial intelligence into a 4-level taxonomy (L1–L4), organizing <span class="highlight-taxonomy"></span>27 sub-abilities</span> from foundational perception to agentic competence.</p> -->
-            <!-- <ul class="pillar-list">
-              <li>L1–L4 with 27 atomic abilities.</li>
-              <li>Weights guided by cognitive theory + correlations.</li>
-              <li>Used for diagnostics and curriculum design.</li>
-            </ul> -->
           </article>
           <article class="pillar-card">
             <div class="figure-frame">
               <img src="assets/instant.png" alt="SpatialEngine pipeline diagram" />
             </div>
             <h3>Engine&Bench</h3>
-            <!-- <p>We instantiate the taxonomy into <span class="highlight-bench">SpatialTree-Bench</span> with <span class="highlight-engine">SpatialTree-Engine</span>.</p> -->
-            <!-- <p>Modular annotator plus SpatialPlus additions that keep every layer populated with data.</p>
-            <ul class="pillar-list">
-              <li>12 perception pipelines → 24 workflows.</li>
-              <li>Orientation, geometry, memory, action traces.</li>
-              <li>Feeds benchmark + future training recipes.</li>
-            </ul> -->
           </article>
           <article class="pillar-card">
             <div class="figure-frame">
               <img src="assets/figures/spatialtree-bench.png" alt="SpatialTree-Bench correlation heatmap" />
             </div>
             <h3>Ability Study</h3>
-            <!-- <p>We study the ability dependencies, and study how them transfer and improve with supervised fine-tuning (SFT) and Reinforcement Learning (RL).</p> -->
-            <!-- <p>Balanced evaluation for 16 MLLMs, revealing orthogonal L1 atoms and L3↔L4 coupling.</p>
-            <ul class="pillar-list">
-              <li>Closed/open + reasoning/non reasoning models.</li>
-              <li>Classification, metric error, action success.</li>
-              <li>Atomic prompting yields +5–22% navigation gains.</li>
-            </ul> -->
           </article>
-        </div>
+        </div> -->
 
       </section>
 
@@ -361,7 +405,7 @@
       </section>
 
       <section id="transfer" class="section">
-        <h2>Ability Acquisition</h2>
+        <h2>Ability Study</h2>
         <div class="transfer-layout">
           <div class="transfer-image">
             <img src="assets/figures/spatialtree-bench.png" alt="Dependency visualization" />
@@ -369,8 +413,8 @@
           <div class="transfer-content">
             <div class="transfer-text reveal">
               <p class="transfer-placeholder">Ability Dependency Analysis</p>
-              <p class="transfer-point">Low-level abilities are largely orthogonal, while high-level abilities are tightly coupled through integration.</p>
-              <p class="transfer-point">Low-level abilities form clear prerequisites that higher-level abilities depend on.</p>
+              <p class="transfer-point">(<span class="region-a">Region A</span> + <span class="region-b">Region B</span>): Low-level abilities are largely orthogonal, while high-level abilities are tightly coupled through integration.</p>
+              <p class="transfer-point">(<span class="region-c">Region C</span>): Low-level abilities form clear prerequisites that higher-level abilities depend on.</p>
             </div>
           </div>
         </div>
