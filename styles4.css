@@ -1615,7 +1615,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   width: 100%;
   max-width: 64rem;
   margin: 0 auto;
-  margin-bottom: 2rem;
+  margin-bottom: 5rem;
   height: 24rem; /* Fixed height to contain absolute items */
   display: flex;
   align-items: center;
