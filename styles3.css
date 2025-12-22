@@ -825,6 +825,18 @@ main {
   color: #3B82F6;
 }
 
+.region-a {
+  color: #16a34a; /* green */
+}
+
+.region-b {
+  color: #f59e0b; /* yellow/amber */
+}
+
+.region-c {
+  color: #2563eb; /* blue */
+}
+
 .key-points {
   margin: 0;
   padding-left: 1.25rem;
