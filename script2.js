@@ -171,35 +171,6 @@ nodeButtons.forEach((btn) => {
 // Ensure default detail matches initial active button
 updateNodeDetail("L4");
 
-
-// Table column expansion logic
-const table = document.querySelector('.benchmark table');
-if (table) {
-  const groups = ['l1', 'l2', 'l3', 'l4'];
-  
-  groups.forEach(group => {
-    const selector = `.col-${group}-sum, .col-${group}-det`;
-    const elements = table.querySelectorAll(selector);
-    let timer;
-
-    const expand = () => {
-      clearTimeout(timer);
-      table.classList.add(`expand-${group}`);
-    };
-
-    const collapse = () => {
-      timer = setTimeout(() => {
-        table.classList.remove(`expand-${group}`);
-      }, 100);
-    };
-
-    elements.forEach(el => {
-      el.addEventListener('mouseenter', expand);
-      el.addEventListener('mouseleave', collapse);
-    });
-  });
-}
-
 // YouTube Player API for chapter navigation
 let overviewPlayer;
 let ytPlayerReady = false;
@@ -394,5 +365,34 @@ document.addEventListener("DOMContentLoaded", function() {
         window.onYouTubeIframeAPIReady();
       }
     }, 1000);
+  }
+});
+
+// Video Gallery Logic
+document.addEventListener('DOMContentLoaded', function() {
+  const galleryVideo = document.getElementById('gallery-video');
+  const galleryBtns = document.querySelectorAll('.gallery-btn');
+  
+  if (galleryVideo && galleryBtns.length > 0) {
+    galleryBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active state
+        galleryBtns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update video source
+        const level = this.getAttribute('data-video');
+        const videoSrc = `assets/figures/demo_video_${level}.mp4`;
+        
+        // Smooth transition
+        galleryVideo.style.opacity = '0.5';
+        
+        setTimeout(() => {
+          galleryVideo.src = videoSrc;
+          galleryVideo.play().catch(e => console.log('Auto-play prevented:', e));
+          galleryVideo.style.opacity = '1';
+        }, 200);
+      });
+    });
   }
 });
