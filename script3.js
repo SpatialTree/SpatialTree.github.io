@@ -623,20 +623,21 @@ function initChart() {
 
   sunburstChart = echarts.init(chartDom);
   
-  // Calculate responsive font sizes based on container width
-  // Base size is 600px, scale proportionally
-  const containerWidth = chartDom.clientWidth || 600;
-  const baseWidth = 600;
-  const scaleFactor = containerWidth / baseWidth;
+  // Get root font size to match HTML's responsive scaling strategy
+  // Root uses: clamp(5.333px, calc(100vw / 60), 16px)
+  // Other elements use rem units that scale with root font-size
+  const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const baseRootFontSize = 16; // Base font size used in clamp
   
-  // Clamp scale factor to reasonable bounds (0.5x to 1.5x)
-  const clampedScale = Math.max(0.5, Math.min(1.5, scaleFactor));
+  // Calculate scale factor based on root font size (same strategy as HTML)
+  const scaleFactor = rootFontSize / baseRootFontSize;
   
-  // Calculate responsive font sizes
-  const innerFontSize = Math.round(11 * clampedScale);
-  const innerLineHeight = Math.round(13 * clampedScale);
-  const outerFontSize = Math.round(10 * clampedScale);
-  const labelPush = Math.round(24 * clampedScale);
+  // Calculate font sizes using the same scaling strategy as HTML
+  // Base sizes: inner 11px, outer 10px (at 16px root font size)
+  const innerFontSize = Math.round(11 * scaleFactor);
+  const innerLineHeight = Math.round(13 * scaleFactor);
+  const outerFontSize = Math.round(10 * scaleFactor);
+  const labelPush = Math.round(24 * scaleFactor);
   
   const data = [
     {
@@ -825,14 +826,14 @@ function initChart() {
       chartDom.style.height = width + 'px';
     }
     if (sunburstChart) {
-      // Recalculate font sizes on resize
-      const baseWidth = 600;
-      const scaleFactor = width / baseWidth;
-      const clampedScale = Math.max(0.5, Math.min(1.5, scaleFactor));
+      // Recalculate font sizes using root font size (same as HTML scaling strategy)
+      const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const baseRootFontSize = 16;
+      const scaleFactor = rootFontSize / baseRootFontSize;
       
-      const newInnerFontSize = Math.round(11 * clampedScale);
-      const newInnerLineHeight = Math.round(13 * clampedScale);
-      const newOuterFontSize = Math.round(10 * clampedScale);
+      const newInnerFontSize = Math.round(11 * scaleFactor);
+      const newInnerLineHeight = Math.round(13 * scaleFactor);
+      const newOuterFontSize = Math.round(10 * scaleFactor);
       
       // Update font sizes in the chart option
       if (sunburstOption && sunburstOption.series && sunburstOption.series.levels) {
