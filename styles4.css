@@ -1615,8 +1615,9 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   width: 100%;
   max-width: 64rem;
   margin: 0 auto;
-  margin-bottom: clamp(3rem, 8vw, 6rem);
-  height: clamp(12rem, 30vw, 24rem); /* Responsive height that scales with viewport */
+  margin-bottom: clamp(2rem, 5vw, 4rem);
+  /* Height based on 80% width with 16:9 aspect ratio, ensuring it scales proportionally */
+  height: clamp(12rem, calc(80vw * 9 / 16), calc(64rem * 0.8 * 9 / 16));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1637,6 +1638,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   width: 80%; /* Controls the size of the central video */
   max-width: 68rem;
   aspect-ratio: 16/9;
+  height: auto; /* Height determined by aspect-ratio */
   border-radius: 1rem;
   overflow: hidden;
   box-shadow: 0 1rem 2rem rgba(0,0,0,0.2);
@@ -1723,7 +1725,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: clamp(3.5rem, 10vw, 7.5rem);
+  margin-top: clamp(2rem, 5vw, 4rem);
 }
 
 .gallery-btn {
@@ -1753,7 +1755,8 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
 
 @media (max-width: 768px) {
   .gallery-carousel-container {
-    height: clamp(10rem, 25vw, 16rem);
+    /* On mobile, use 85% width (from .carousel-item width: 85%) */
+    height: clamp(10rem, calc(85vw * 9 / 16), calc(64rem * 0.85 * 9 / 16));
   }
   
   .carousel-item {
