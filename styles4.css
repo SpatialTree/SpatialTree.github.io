@@ -1615,7 +1615,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   width: 100%;
   max-width: 64rem;
   margin: 0 auto;
-  margin-bottom: clamp(2rem, 5vw, 4rem);
+  margin-bottom: clamp(3rem, 6vw, 4.5rem);
   /* Height based on 80% width with 16:9 aspect ratio, ensuring it scales proportionally */
   height: clamp(12rem, calc(80vw * 9 / 16), calc(64rem * 0.8 * 9 / 16));
   display: flex;
@@ -1725,7 +1725,7 @@ th.col-l1-det, th.col-l2-det, th.col-l3-det, th.col-l4-det {
   justify-content: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  margin-top: clamp(2rem, 5vw, 4rem);
+  margin-top: clamp(3rem, 6vw, 4.5rem);
 }
 
 .gallery-btn {
