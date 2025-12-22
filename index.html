@@ -270,10 +270,19 @@
 
       <section id="benchmark" class="section benchmark">
         <h2>SpatialTree-Bench</h2>
-        <p>
-          SpatialTree-Bench measures 16 closed/open MLLMs across L1–L4 with balanced weighting, revealing orthogonal perception atoms and tightly coupled higher
-          layers.
-        </p>
+        <div class="benchmark-top">
+          <div class="benchmark-intro">
+            <p>
+              SpatialTree-Bench measures 16 closed/open MLLMs across L1–L4 with balanced weighting, revealing orthogonal perception atoms and tightly coupled higher
+              layers.
+            </p>
+          </div>
+
+          <div class="chart-container">
+            <h3 class="chart-title"></h3>
+            <div id="sunburst-chart"></div>
+          </div>
+        </div>
         <div class="table-legend" aria-label="Leaderboard legend">
           <span class="legend-item"><span class="legend-swatch swatch-closed" aria-hidden="true"></span>Closed-source</span>
           <span class="legend-item"><span class="legend-swatch swatch-open" aria-hidden="true"></span>Open-source</span>
@@ -727,6 +736,7 @@
       <p>Last updated: Oct 2025</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script3.js"></script>
   </body>

@@ -523,3 +523,188 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+// ECharts Sunburst Visualization
+function initChart() {
+  const chartDom = document.getElementById('sunburst-chart');
+  if (!chartDom) return;
+  
+  const myChart = echarts.init(chartDom);
+  
+  const data = [
+    {
+      name: 'L1 Perception',
+      itemStyle: { color: '#8b5cf6' }, // Violet
+      children: [
+        { name: 'Geometry', value: 1330, itemStyle: { color: '#a78bfa' } },
+        { name: 'Motion', value: 150, itemStyle: { color: '#c4b5fd' } },
+        { name: 'Relation', value: 550, itemStyle: { color: '#ddd6fe' } },
+        { name: 'Localization', value: 534, itemStyle: { color: '#9f7aea' } },
+        { name: 'Orientation', value: 350, itemStyle: { color: '#b794f4' } }
+      ]
+    },
+    {
+      name: 'L2 Mental\nMapping',
+      itemStyle: { color: '#f59e0b' }, // Amber
+      children: [
+        { name: 'Underst.', value: 1795, itemStyle: { color: '#fbbf24' } },
+        { name: 'Memory', value: 1150, itemStyle: { color: '#fcd34d' } }
+      ]
+    },
+    {
+      name: 'L3 Mental\nSimulation',
+      itemStyle: { color: '#10b981' }, // Emerald green
+      children: [
+        { name: 'Caus. Reas.', value: 667, itemStyle: { color: '#34d399' } },
+        { name: 'Seq. Plan.', value: 342, itemStyle: { color: '#6ee7b7' } }
+      ]
+    },
+    {
+      name: 'L4 Agentic\nCompetence',
+      itemStyle: { color: '#3655ff' }, // Site accent blue
+      children: [
+        { name: 'Goal-Driven\nExecution', value: 500, itemStyle: { color: '#6b85ff' } },
+        { name: 'Open-world\nExploration', value: 182, itemStyle: { color: '#8ba1ff' } }
+      ]
+    }
+  ];
+
+  const option = {
+    textStyle: {
+      fontFamily:
+        '"Plus Jakarta Sans", "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: function(params) {
+        const value = typeof params.value === 'number' ? params.value : '';
+        const percent = typeof params.percent === 'number' ? params.percent.toFixed(1) : null;
+        return percent === null ? `${params.name}: ${value}` : `${params.name}: ${value} (${percent}%)`;
+      }
+    },
+    series: {
+      type: 'sunburst',
+      data: data,
+      // Use a larger outer radius so labels have room,
+      // and tweak levels below to control inner/outer proportions.
+      radius: [0, '90%'],
+      nodeClick: false,
+      sort: undefined,
+      // Hover interaction: highlight hovered sector, dim the rest.
+      // Also make the whole palette feel lighter by default via opacity.
+      emphasis: {
+        focus: 'self',
+        itemStyle: {
+          opacity: 0.95,
+          borderWidth: 0,
+          borderColor: 'transparent'
+        },
+        label: {
+          opacity: 1
+        }
+      },
+      blur: {
+        itemStyle: {
+          opacity: 0.12
+        },
+        label: {
+          opacity: 0.25
+        }
+      },
+      labelLayout: function(params) {
+        // Only nudge the inner ring labels (L1–L4) outward.
+        // This keeps the ring sizes unchanged and avoids text overflow.
+        const text = String(params.text || '');
+        if (!/^L[1-4]\n/i.test(text)) return;
+
+        const cx = chartDom.clientWidth / 2;
+        const cy = chartDom.clientHeight / 2;
+        const ex = params.rect.x + params.rect.width / 2;
+        const ey = params.rect.y + params.rect.height / 2;
+
+        const vx = ex - cx;
+        const vy = ey - cy;
+        const len = Math.hypot(vx, vy) || 1;
+
+        // Positive means "away from center". Keep it very subtle.
+        const push = 24;
+        return {
+          dx: (vx / len) * push,
+          dy: (vy / len) * push
+        };
+      },
+      levels: [
+        {
+          // Depth 0: virtual root (hide it to avoid a "donut hole" illusion)
+          r0: 0,
+          r: '0%',
+          itemStyle: {
+            borderWidth: 0
+          },
+          label: {
+            show: false
+          }
+        },
+        {
+          // Depth 1: L1-L4 Categories (inner ring)
+          r0: '0%',
+          r: '35%',
+          itemStyle: {
+            opacity: 0.55,
+            borderWidth: 0,
+            borderColor: 'transparent'
+          },
+          label: {
+            rotate: 0,
+            align: 'center',
+            verticalAlign: 'middle',
+            position: 'inside',
+            color: '#fff',
+            fontWeight: 'bold',
+            fontSize: 11,
+            lineHeight: 13,
+            overflow: 'break',
+            formatter: function(params) {
+              // Abbreviate inner-ring labels to avoid overflow.
+              const raw = String(params.name || '').replace(/\s+/g, ' ').trim();
+              if (/^L1\b/i.test(raw)) return 'L1\nPerc.';
+              if (/^L2\b/i.test(raw)) return 'L2\nMap.';
+              if (/^L3\b/i.test(raw)) return 'L3\nSim.';
+              if (/^L4\b/i.test(raw)) return 'L4\nAgent.';
+              return raw;
+            }
+          }
+        },
+        {
+          // Depth 2: Subcategories (outer ring)
+          r0: '35%',
+          r: '68%',
+          itemStyle: {
+            opacity: 0.55,
+            borderWidth: 0,
+            borderColor: 'transparent'
+          },
+          label: {
+            rotate: 'radial',
+            align: 'center',
+            color: '#1c1b1bff',
+            fontSize: 10,
+            minAngle: 7
+          }
+        }
+      ]
+    }
+  };
+
+  myChart.setOption(option);
+  
+  window.addEventListener('resize', function() {
+    myChart.resize();
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initChart);
+} else {
+  initChart();
+}
