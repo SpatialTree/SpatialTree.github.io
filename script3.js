@@ -525,11 +525,103 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ECharts Sunburst Visualization
+let sunburstChart = null;
+let sunburstOption = null;
+
+// Sequential animation: reveal sectors one by one
+// This function adds sectors incrementally to create the "one by one" appearance effect
+function revealSectorsSequentially(chart, fullData, baseOption, delay = 120) {
+  // Start with empty data but full configuration
+  const emptyOption = {
+    ...baseOption,
+    series: [{
+      ...baseOption.series,
+      data: [],
+      animation: true,
+      animationDuration: 500,
+      animationEasing: 'cubicOut',
+      animationType: 'scale'
+    }]
+  };
+  chart.setOption(emptyOption, { notMerge: true });
+  
+  // Flatten all sectors (main + children) for sequential reveal
+  const allSectors = [];
+  fullData.forEach((mainSector) => {
+    // Add main sector first
+    allSectors.push({ type: 'main', data: mainSector, parentIndex: -1 });
+    // Then add all its children
+    if (mainSector.children) {
+      mainSector.children.forEach((child) => {
+        allSectors.push({ type: 'child', data: child, parentIndex: fullData.indexOf(mainSector) });
+      });
+    }
+  });
+  
+  // Reveal sectors one by one
+  let currentData = [];
+  let currentMainIndex = -1;
+  let currentMainSector = null;
+  
+  function revealNext(index) {
+    if (index >= allSectors.length) return;
+    
+    const sector = allSectors[index];
+    
+    if (sector.type === 'main') {
+      // Add new main sector
+      currentMainIndex++;
+      // Use structuredClone for better performance
+      currentMainSector = typeof structuredClone !== 'undefined' 
+        ? structuredClone(sector.data) 
+        : JSON.parse(JSON.stringify(sector.data));
+      currentMainSector.children = []; // Start with no children
+      currentData.push(currentMainSector);
+    } else {
+      // Add child to current main sector
+      if (currentMainSector) {
+        const childCopy = typeof structuredClone !== 'undefined' 
+          ? structuredClone(sector.data) 
+          : JSON.parse(JSON.stringify(sector.data));
+        currentMainSector.children.push(childCopy);
+      }
+    }
+    
+    // Update chart with current data
+    // Use structuredClone for better performance, fallback to JSON if not available
+    const dataCopy = typeof structuredClone !== 'undefined' 
+      ? structuredClone(currentData) 
+      : JSON.parse(JSON.stringify(currentData));
+    
+    chart.setOption({
+      series: [{
+        data: dataCopy,
+        animation: true,
+        animationDuration: 500,
+        animationEasing: 'cubicOut',
+        animationType: 'scale'
+      }]
+    }, { notMerge: false, lazyUpdate: true });
+    
+    // Use requestAnimationFrame for smoother timing
+    requestAnimationFrame(() => {
+      setTimeout(() => revealNext(index + 1), delay);
+    });
+  }
+  
+  // Start revealing
+  revealNext(0);
+}
+
 function initChart() {
   const chartDom = document.getElementById('sunburst-chart');
   if (!chartDom) return;
-  
-  const myChart = echarts.init(chartDom);
+
+  if (sunburstChart) {
+    sunburstChart.dispose();
+  }
+
+  sunburstChart = echarts.init(chartDom);
   
   const data = [
     {
@@ -569,7 +661,11 @@ function initChart() {
     }
   ];
 
+  // Sunburst chart configuration: displays L1-L4 spatial abilities hierarchy
+  // The chart uses a transparent background and fits exactly within its container (radius 100%)
   const option = {
+    // Explicitly set transparent background to remove any default ECharts container background
+    backgroundColor: 'transparent',
     textStyle: {
       fontFamily:
         '"Plus Jakarta Sans", "Space Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif'
@@ -585,9 +681,8 @@ function initChart() {
     series: {
       type: 'sunburst',
       data: data,
-      // Use a larger outer radius so labels have room,
-      // and tweak levels below to control inner/outer proportions.
-      radius: [0, '90%'],
+      // Radius set to 100% so the circle is exactly tangent to the container edges (no overflow)
+      radius: [0, '100%'],
       nodeClick: false,
       sort: undefined,
       // Hover interaction: highlight hovered sector, dim the rest.
@@ -633,6 +728,9 @@ function initChart() {
           dy: (vy / len) * push
         };
       },
+      // Animation will be controlled manually via revealSectorsSequentially
+      // Disable automatic animation here since we're doing it manually
+      animation: false,
       levels: [
         {
           // Depth 0: virtual root (hide it to avoid a "donut hole" illusion)
@@ -643,7 +741,9 @@ function initChart() {
           },
           label: {
             show: false
-          }
+          },
+          // No animation for root level
+          animation: false
         },
         {
           // Depth 1: L1-L4 Categories (inner ring)
@@ -690,21 +790,64 @@ function initChart() {
             color: '#1c1b1bff',
             fontSize: 10,
             minAngle: 7
-          }
+          },
         }
       ]
     }
   };
 
-  myChart.setOption(option);
+  sunburstOption = option;
   
-  window.addEventListener('resize', function() {
-    myChart.resize();
-  });
+  // Instead of setting all data at once, reveal sectors sequentially
+  // This creates the "one by one" appearance effect where each sector appears individually
+  // Reduced delay (120ms) and duration (500ms) for smoother animation
+  revealSectorsSequentially(sunburstChart, data, option, 120);
+
+  function resizeChart() {
+    const width = chartDom.clientWidth || 0;
+    if (width > 0) {
+      chartDom.style.height = width + 'px';
+    }
+    if (sunburstChart) {
+      sunburstChart.resize();
+    }
+  }
+
+  resizeChart();
+  window.addEventListener('resize', resizeChart);
+}
+
+// Init or re-init chart when it scrolls into view so the animation plays each time
+// Each time the chart enters the viewport, it will be re-initialized to replay the animation
+function setupChartOnReveal() {
+  const chartDom = document.getElementById('sunburst-chart');
+  if (!chartDom) return;
+
+  const chartObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Re-initialize chart to replay the animation
+          // Dispose old instance first to ensure clean state
+          if (sunburstChart) {
+            sunburstChart.dispose();
+            sunburstChart = null;
+          }
+          // Small delay to ensure DOM is ready, then init with animation
+          setTimeout(() => {
+            initChart();
+          }, 50);
+        }
+      });
+    },
+    { threshold: 0.25 }
+  );
+
+  chartObserver.observe(chartDom);
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initChart);
+  document.addEventListener('DOMContentLoaded', setupChartOnReveal);
 } else {
-  initChart();
+  setupChartOnReveal();
 }
