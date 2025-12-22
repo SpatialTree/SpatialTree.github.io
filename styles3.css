@@ -503,6 +503,9 @@ main {
   background: radial-gradient(circle at top left, rgba(54, 85, 255, 0.06), transparent 55%),
     #f8fafc;
   box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.45s cubic-bezier(0.16, 0.84, 0.44, 1), transform 0.45s cubic-bezier(0.16, 0.84, 0.44, 1);
 }
 
 .takeaways-header {
@@ -522,8 +525,43 @@ main {
   line-height: 1.7;
 }
 
+.takeaways-list li {
+  opacity: 0;
+  transform: translateX(-8px);
+}
+
 .takeaways-list li + li {
   margin-top: 0.4rem;
+}
+
+.takeaways-box.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.takeaways-box.visible .takeaways-list li {
+  position: relative;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+}
+
+.takeaways-box.visible .takeaways-list li:nth-child(1) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.05s;
+}
+
+.takeaways-box.visible .takeaways-list li:nth-child(2) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.18s;
+}
+
+.takeaways-box.visible .takeaways-list li:nth-child(3) {
+  opacity: 1;
+  transform: translateX(0);
+  transition-delay: 0.31s;
 }
 
 .motivation {
