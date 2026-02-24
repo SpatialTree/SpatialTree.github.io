@@ -1,0 +1,86 @@
+name: "📊 Submit Eval Results"
+description: "Submit your model's evaluation results to appear on the SpatialTree-Bench leaderboard."
+title: "[Eval Submission] <Model Name>"
+labels: ["eval-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for evaluating on SpatialTree-Bench! Please fill in the fields below.
+        Make sure you followed the evaluation instructions at https://github.com/ByteDance-Seed/SpatialTree?tab=readme-ov-file#-evaluation
+
+  - type: input
+    id: model_name
+    attributes:
+      label: Model Name
+      description: The name of the model as you want it to appear on the leaderboard.
+      placeholder: e.g. InternVL2-8B
+    validations:
+      required: true
+
+  - type: dropdown
+    id: model_type
+    attributes:
+      label: Model Type
+      options:
+        - Open-source
+        - Closed-source
+    validations:
+      required: true
+
+  - type: input
+    id: model_link
+    attributes:
+      label: Model / Paper Link
+      description: URL to the model page, paper, or HuggingFace repo.
+      placeholder: https://
+
+  - type: input
+    id: score_avg
+    attributes:
+      label: Overall Avg. Score
+      placeholder: e.g. 52.3
+    validations:
+      required: true
+
+  - type: input
+    id: score_l1
+    attributes:
+      label: L1 · Perception Score
+      placeholder: e.g. 61.2
+    validations:
+      required: true
+
+  - type: input
+    id: score_l2
+    attributes:
+      label: L2 · Mental Mapping Score
+      placeholder: e.g. 48.7
+    validations:
+      required: true
+
+  - type: input
+    id: score_l3
+    attributes:
+      label: L3 · Mental Simulation Score
+      placeholder: e.g. 50.1
+    validations:
+      required: true
+
+  - type: input
+    id: score_l4
+    attributes:
+      label: L4 · Agentic Competence Score
+      placeholder: e.g. 49.2
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: I followed the official evaluation script and settings.
+          required: true
+        - label: The results are reproducible and I am willing to share details if asked.
+          required: true
