@@ -340,6 +340,25 @@ main {
   justify-content: center;
 }
 
+.eval-tip {
+  margin-top: 1rem;
+  font-size: 0.78rem;
+  color: var(--text-muted, #999);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.eval-tip a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(0,0,0,0.25);
+}
+
+.eval-tip a:hover {
+  text-decoration-color: currentColor;
+}
+
 .resource-btn {
   display: inline-flex;
   align-items: center;
